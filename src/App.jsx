@@ -41,10 +41,9 @@ export default function KPIReachCalculator() {
     <div className="min-h-screen bg-slate-50 text-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
         <header className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-semibold">Calculateur KPIs et Reach Média</h1>
+          <h1 className="text-2xl md:text-3xl font-semibold">Performance Media Estimator</h1>
           <p className="text-slate-600 mt-1">
-            Prépare rapidement tes offres, calcule impressions, clics, CPM, VTR, viewability, et estime le reach cumulé sur tes dates de campagne.
-          </p>
+Speed through proposal prep, calculate impressions, click volumes, CPM, VTR, viewability, and total projected reach for your campaign timeline.          </p>
         </header>
 
         <ErrorBanner errors={blockingErrorMessages} />
