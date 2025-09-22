@@ -1,22 +1,24 @@
 import React from 'react';
 import { formatInt, formatCurrency } from '../utils/format.js';
+import { useLocale } from '../i18n.jsx';
 
 export default function DailyTable({ dailyRows, currency }) {
+  const { t } = useLocale();
   return (
     <section className="mt-6 bg-white rounded-2xl shadow">
       <div className="p-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Pacing et reach par jour</h3>
-        <div className="text-sm text-slate-500">{dailyRows.length} lignes</div>
+        <h3 className="text-lg font-semibold">{t('dailyTable.title')}</h3>
+        <div className="text-sm text-slate-500">{t('dailyTable.rowsCount', { count: dailyRows.length })}</div>
       </div>
       <div className="overflow-auto">
         <table className="w-full text-sm">
           <thead className="bg-slate-100">
             <tr>
-              <th className="text-left p-2">Date</th>
-              <th className="text-right p-2">Budget {currency}</th>
-              <th className="text-right p-2">Impressions</th>
-              <th className="text-right p-2">Reach incrémental</th>
-              <th className="text-right p-2">Reach cumulé</th>
+              <th className="text-left p-2">{t('dailyTable.headers.date')}</th>
+              <th className="text-right p-2">{t('dailyTable.headers.budget', { currency })}</th>
+              <th className="text-right p-2">{t('dailyTable.headers.impressions')}</th>
+              <th className="text-right p-2">{t('dailyTable.headers.incrReach')}</th>
+              <th className="text-right p-2">{t('dailyTable.headers.cumReach')}</th>
             </tr>
           </thead>
           <tbody>
@@ -32,7 +34,7 @@ export default function DailyTable({ dailyRows, currency }) {
             {!dailyRows.length && (
               <tr>
                 <td colSpan={5} className="p-6 text-center text-slate-500">
-                  Renseigne des dates et un budget pour voir le détail journalier.
+                  {t('dailyTable.empty')}
                 </td>
               </tr>
             )}
@@ -42,4 +44,3 @@ export default function DailyTable({ dailyRows, currency }) {
     </section>
   );
 }
-

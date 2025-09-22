@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { UNIVERSE_PRESETS } from '../constants/universePresets.js';
+import { resolveMessage, useLocale } from '../i18n.jsx';
 
 function Field({ label, error, helper, children }) {
   return (
@@ -31,16 +32,24 @@ export default function ControlsPanel({
   errors,
   customSharesSum,
 }) {
+  const { t } = useLocale();
+  const getError = useMemo(() => (
+    (errorDescriptor) => {
+      const message = resolveMessage(errorDescriptor, t);
+      return message || undefined;
+    }
+  ), [t]);
+
   const sumFormatted = Number.isFinite(customSharesSum) ? customSharesSum.toFixed(2) : '0.00';
   const pacingHelper = inputs.pacingMode === 'Even'
-    ? `Répartition égale sur ${campaignDays || 0} jour(s).`
-    : `Répartition personnalisée, total actuel ${sumFormatted}%.`;
+    ? t('controls.helper.pacingEven', { days: campaignDays || 0 })
+    : t('controls.helper.pacingCustom', { sum: sumFormatted });
 
   return (
     <section className="grid md:grid-cols-3 gap-4">
-      <Card title="Paramètres d'achat">
+      <Card title={t('controls.section.purchase')}>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Devise">
+          <Field label={t('controls.fields.currency')}>
             <select
               value={inputs.currency}
               onChange={(event) => updateInput('currency')(event.target.value)}
@@ -51,7 +60,7 @@ export default function ControlsPanel({
               <option value="£">£</option>
             </select>
           </Field>
-          <Field label="Budget total" error={errors.budget}>
+          <Field label={t('controls.fields.budget')} error={getError(errors.budget)}>
             <input
               type="text"
               inputMode="decimal"
@@ -61,7 +70,7 @@ export default function ControlsPanel({
               aria-invalid={Boolean(errors.budget)}
             />
           </Field>
-          <Field label="CPM" error={errors.cpm}>
+          <Field label={t('controls.fields.cpm')} error={getError(errors.cpm)}>
             <input
               type="text"
               inputMode="decimal"
@@ -71,7 +80,7 @@ export default function ControlsPanel({
               aria-invalid={Boolean(errors.cpm)}
             />
           </Field>
-          <Field label="CTR %" error={errors.ctr}>
+          <Field label={t('controls.fields.ctr')} error={getError(errors.ctr)}>
             <input
               type="text"
               inputMode="decimal"
@@ -81,7 +90,7 @@ export default function ControlsPanel({
               aria-invalid={Boolean(errors.ctr)}
             />
           </Field>
-          <Field label="VTR %" error={errors.vtr}>
+          <Field label={t('controls.fields.vtr')} error={getError(errors.vtr)}>
             <input
               type="text"
               inputMode="decimal"
@@ -91,7 +100,7 @@ export default function ControlsPanel({
               aria-invalid={Boolean(errors.vtr)}
             />
           </Field>
-          <Field label="Viewability %" error={errors.viewability}>
+          <Field label={t('controls.fields.viewability')} error={getError(errors.viewability)}>
             <input
               type="text"
               inputMode="decimal"
@@ -104,9 +113,9 @@ export default function ControlsPanel({
         </div>
       </Card>
 
-      <Card title="Reach et univers">
+      <Card title={t('controls.section.reach')}>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Préréglages d'univers">
+          <Field label={t('controls.fields.presets')}>
             <select
               value={selectedPreset}
               onChange={(event) => handlePresetChange(event.target.value)}
@@ -119,7 +128,7 @@ export default function ControlsPanel({
               ))}
             </select>
           </Field>
-          <Field label="Fréquence moyenne" error={errors.avgFreq}>
+          <Field label={t('controls.fields.avgFreq')} error={getError(errors.avgFreq)}>
             <input
               type="text"
               inputMode="decimal"
@@ -129,7 +138,7 @@ export default function ControlsPanel({
               aria-invalid={Boolean(errors.avgFreq)}
             />
           </Field>
-          <Field label="Taille d'univers" error={errors.audienceSize}>
+          <Field label={t('controls.fields.audienceSize')} error={getError(errors.audienceSize)}>
             <input
               type="text"
               inputMode="numeric"
@@ -139,25 +148,25 @@ export default function ControlsPanel({
               aria-invalid={Boolean(errors.audienceSize)}
             />
           </Field>
-          <Field label="Modèle de reach">
+          <Field label={t('controls.fields.reachModel')}>
             <select
               value={inputs.reachModel}
               onChange={(event) => updateInput('reachModel')(event.target.value)}
               className="w-full border rounded-lg p-2"
             >
-              <option value="Poisson">Poisson</option>
-              <option value="Simple">Simple</option>
+              <option value="Poisson">{t('controls.reachModelOptions.Poisson')}</option>
+              <option value="Simple">{t('controls.reachModelOptions.Simple')}</option>
             </select>
           </Field>
           <p className="col-span-2 text-xs text-slate-500">
-            Poisson reflète la duplication probable, Simple divise les impressions par la fréquence moyenne.
+            {t('controls.helper.poissonInfo')}
           </p>
         </div>
       </Card>
 
-      <Card title="Dates et pacing">
+      <Card title={t('controls.section.pacing')}>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Start" error={errors.dateRange}>
+          <Field label={t('controls.fields.start')} error={getError(errors.dateRange)}>
             <input
               type="date"
               value={inputs.startDate}
@@ -165,7 +174,7 @@ export default function ControlsPanel({
               className="w-full border rounded-lg p-2"
             />
           </Field>
-          <Field label="End" error={errors.dateRange}>
+          <Field label={t('controls.fields.end')} error={getError(errors.dateRange)}>
             <input
               type="date"
               value={inputs.endDate}
@@ -173,18 +182,22 @@ export default function ControlsPanel({
               className="w-full border rounded-lg p-2"
             />
           </Field>
-          <Field label="Pacing" error={errors.customShares} helper={campaignDays ? pacingHelper : 'Ajoute des dates pour activer le pacing.'}>
+          <Field
+            label={t('controls.fields.pacing')}
+            error={getError(errors.customShares)}
+            helper={campaignDays ? pacingHelper : t('controls.helper.pacingDisabled')}
+          >
             <select
               value={inputs.pacingMode}
               onChange={(event) => updateInput('pacingMode')(event.target.value)}
               className="w-full border rounded-lg p-2"
             >
-              <option value="Even">Even</option>
-              <option value="Custom">Custom</option>
+              <option value="Even">{t('controls.pacingOptions.Even')}</option>
+              <option value="Custom">{t('controls.pacingOptions.Custom')}</option>
             </select>
           </Field>
           <div className="col-span-2 text-sm text-slate-600">
-            Jours de campagne, {campaignDays || 0}
+            {t('controls.campaignDays', { count: campaignDays || 0 })}
           </div>
         </div>
       </Card>

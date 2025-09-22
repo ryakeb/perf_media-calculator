@@ -1,4 +1,5 @@
 import React from 'react';
+import { resolveMessage, useLocale } from '../i18n.jsx';
 
 export default function CustomPacingEditor({
   pacingMode,
@@ -9,33 +10,35 @@ export default function CustomPacingEditor({
   customSharesSum,
   error,
 }) {
+  const { t } = useLocale();
   if (pacingMode !== 'Custom' || !dateLabels.length) {
     return null;
   }
 
   const sumFormatted = Number.isFinite(customSharesSum) ? customSharesSum.toFixed(2) : '0.00';
+  const errorMessage = resolveMessage(error, t);
 
   return (
     <section className="mt-4 bg-white rounded-2xl shadow">
       <div className="p-4 flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Répartition personnalisée du budget</h3>
-          <p className="text-sm text-slate-600">Ajuste les pourcentages par jour (total 100%).</p>
+          <h3 className="text-lg font-semibold">{t('customPacing.title')}</h3>
+          <p className="text-sm text-slate-600">{t('customPacing.subtitle')}</p>
         </div>
         <button
           type="button"
           onClick={resetCustomShares}
           className="px-3 py-1 text-sm rounded-lg border shadow hover:bg-slate-50"
         >
-          Répartir équitablement
+          {t('customPacing.reset')}
         </button>
       </div>
       <div className="overflow-auto">
         <table className="w-full text-sm">
           <thead className="bg-slate-100">
             <tr>
-              <th className="text-left p-2">Date</th>
-              <th className="text-right p-2">Pourcentage du budget</th>
+              <th className="text-left p-2">{t('customPacing.table.date')}</th>
+              <th className="text-right p-2">{t('customPacing.table.share')}</th>
             </tr>
           </thead>
           <tbody>
@@ -58,10 +61,9 @@ export default function CustomPacingEditor({
         </table>
       </div>
       <div className="p-4 flex items-center justify-between border-t text-sm">
-        <div>Total: {sumFormatted}%</div>
-        {error && <div className="text-rose-600">{error}</div>}
+        <div>{t('customPacing.total', { value: sumFormatted })}</div>
+        {errorMessage && <div className="text-rose-600">{errorMessage}</div>}
       </div>
     </section>
   );
 }
-

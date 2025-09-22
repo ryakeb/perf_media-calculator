@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import ControlsPanel from './components/ControlsPanel.jsx';
 import SummaryCards from './components/SummaryCards.jsx';
 import ReachSummary from './components/ReachSummary.jsx';
@@ -9,8 +9,10 @@ import TestsSection from './components/TestsSection.jsx';
 import NotesSection from './components/NotesSection.jsx';
 import CustomPacingEditor from './components/CustomPacingEditor.jsx';
 import { useKpiModel } from './hooks/useKpiModel.js';
+import { LocaleProvider, resolveMessage, useLocale } from './i18n.jsx';
 
 function ErrorBanner({ errors }) {
+  const { t } = useLocale();
   if (!errors.length) {
     return null;
   }
@@ -18,32 +20,50 @@ function ErrorBanner({ errors }) {
   return (
     <div className="mb-4 border border-rose-200 bg-rose-50 text-rose-700 rounded-xl p-4 text-sm">
       <ul className="list-disc pl-5 space-y-1">
-        {errors.map((error) => (
-          <li key={error}>{error}</li>
+        {errors.map((error, index) => (
+          <li key={error?.key ?? index}>{resolveMessage(error, t)}</li>
         ))}
       </ul>
     </div>
   );
 }
 
-export default function KPIReachCalculator() {
+function KPIReachCalculatorContent() {
   const model = useKpiModel();
+  const { t, language, setLanguage } = useLocale();
 
-  const blockingErrorMessages = [];
-  if (model.errors.budget) blockingErrorMessages.push(model.errors.budget);
-  if (model.errors.cpm) blockingErrorMessages.push(model.errors.cpm);
-  if (model.errors.avgFreq) blockingErrorMessages.push(model.errors.avgFreq);
-  if (model.errors.audienceSize) blockingErrorMessages.push(model.errors.audienceSize);
-  if (model.errors.dateRange) blockingErrorMessages.push(model.errors.dateRange);
-  if (model.errors.customShares) blockingErrorMessages.push(model.errors.customShares);
+  const blockingErrorMessages = useMemo(() => {
+    const descriptors = [];
+    if (model.errors.budget) descriptors.push(model.errors.budget);
+    if (model.errors.cpm) descriptors.push(model.errors.cpm);
+    if (model.errors.avgFreq) descriptors.push(model.errors.avgFreq);
+    if (model.errors.audienceSize) descriptors.push(model.errors.audienceSize);
+    if (model.errors.dateRange) descriptors.push(model.errors.dateRange);
+    if (model.errors.customShares) descriptors.push(model.errors.customShares);
+    return descriptors;
+  }, [model.errors]);
+
+  const toggleLabel = language === 'fr' ? t('app.switchToEnglish') : t('app.switchToFrench');
+
+  const handleToggleLanguage = () => {
+    setLanguage(language === 'fr' ? 'en' : 'fr');
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-semibold">Performance Media Estimator</h1>
-          <p className="text-slate-600 mt-1">
-Speed through proposal prep, calculate impressions, click volumes, CPM, VTR, viewability, and total projected reach for your campaign timeline.          </p>
+        <header className="mb-6 flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-semibold">{t('app.title')}</h1>
+            <p className="text-slate-600 mt-1">{t('app.description')}</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleToggleLanguage}
+            className="px-3 py-1 text-sm rounded-lg border shadow hover:bg-slate-100 transition"
+          >
+            {toggleLabel}
+          </button>
         </header>
 
         <ErrorBanner errors={blockingErrorMessages} />
@@ -104,5 +124,15 @@ Speed through proposal prep, calculate impressions, click volumes, CPM, VTR, vie
         <NotesSection />
       </div>
     </div>
+  );
+}
+
+export default function KPIReachCalculator() {
+  const [language, setLanguage] = useState('fr');
+
+  return (
+    <LocaleProvider language={language} setLanguage={setLanguage}>
+      <KPIReachCalculatorContent />
+    </LocaleProvider>
   );
 }

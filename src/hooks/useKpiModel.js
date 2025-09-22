@@ -35,7 +35,7 @@ const DEFAULT_INPUTS = {
   startDate: '',
   endDate: '',
   pacingMode: 'Even',
-  reachModel: 'Poisson',
+  reachModel: 'Simple',
   targetImpr: '',
 };
 
@@ -49,31 +49,204 @@ function buildPresetMap() {
 
 const PRESET_MAP = buildPresetMap();
 
+function computeModelSnapshot({ inputs, customShares, campaignDays, rawDiffDays }) {
+  const parsed = {
+    budget: parsePositiveNumber(inputs.budget),
+    cpm: parsePositiveNumber(inputs.cpm),
+    ctr: parsePercentageInput(inputs.ctr, { min: 0, max: 100 }),
+    vtr: parsePercentageInput(inputs.vtr, { min: 0, max: 100 }),
+    viewability: parsePercentageInput(inputs.viewability, { min: 0, max: 100 }),
+    avgFreq: parsePositiveNumber(inputs.avgFreq),
+    audienceSize: parsePositiveNumber(inputs.audienceSize),
+    targetImpr: parseNonNegativeNumber(inputs.targetImpr),
+  };
+
+  const numericValues = {
+    budget: parsed.budget.isValid ? parsed.budget.value : 0,
+    cpm: parsed.cpm.isValid ? parsed.cpm.value : 0,
+    ctr: parsed.ctr.isValid ? parsed.ctr.value / 100 : 0,
+    vtr: parsed.vtr.isValid ? parsed.vtr.value / 100 : 0,
+    viewability: parsed.viewability.isValid ? parsed.viewability.value / 100 : 0,
+    avgFreq: parsed.avgFreq.isValid ? parsed.avgFreq.value : 0,
+    audienceSize: parsed.audienceSize.isValid ? parsed.audienceSize.value : 0,
+    targetImpr: parsed.targetImpr.isValid ? Math.max(0, parsed.targetImpr.value) : 0,
+  };
+
+  const customShareNumbers = customShares.map((value) => {
+    const parsedValue = parseNumericInput(value);
+    return parsedValue.isValid ? Math.max(0, parsedValue.value) : 0;
+  });
+
+  const customSharesSum = roundTo(sumNumbers(customShareNumbers), 2);
+
+  const customSharesAreValid = inputs.pacingMode !== 'Custom'
+    || campaignDays === 0
+    || Math.abs(customSharesSum - 100) <= 0.5;
+
+  const errors = {};
+
+  if (!parsed.budget.isValid) {
+    errors.budget = { key: 'errors.budgetPositive' };
+  }
+  if (!parsed.cpm.isValid) {
+    errors.cpm = { key: 'errors.cpmPositive' };
+  }
+  if (!parsed.ctr.isValid) {
+    errors.ctr = { key: 'errors.ctrRange' };
+  }
+  if (!parsed.vtr.isValid) {
+    errors.vtr = { key: 'errors.vtrRange' };
+  }
+  if (!parsed.viewability.isValid) {
+    errors.viewability = { key: 'errors.viewabilityRange' };
+  }
+  if (!parsed.avgFreq.isValid) {
+    errors.avgFreq = { key: 'errors.avgFreqPositive' };
+  }
+  if (!parsed.audienceSize.isValid) {
+    errors.audienceSize = { key: 'errors.audiencePositive' };
+  }
+  if (rawDiffDays !== null && rawDiffDays < 0) {
+    errors.dateRange = { key: 'errors.dateOrder' };
+  }
+  if (inputs.targetImpr && !parsed.targetImpr.isValid) {
+    errors.targetImpr = { key: 'errors.targetImprValid' };
+  }
+  if (inputs.pacingMode === 'Custom' && campaignDays > 0 && !customSharesAreValid) {
+    errors.customShares = {
+      key: 'errors.customShares',
+      params: { sum: customSharesSum.toFixed(2) },
+    };
+  }
+
+  const hasBlockingErrors = Boolean(errors.budget)
+    || Boolean(errors.cpm)
+    || Boolean(errors.avgFreq)
+    || Boolean(errors.audienceSize)
+    || Boolean(errors.dateRange)
+    || (inputs.pacingMode === 'Custom' && !customSharesAreValid);
+
+  const dailyBudgets = (() => {
+    if (campaignDays <= 0 || !parsed.budget.isValid) {
+      return [];
+    }
+    if (inputs.pacingMode === 'Custom' && customSharesAreValid) {
+      return distributeByWeights(parsed.budget.value, customShareNumbers);
+    }
+    return distributeEven(parsed.budget.value, campaignDays);
+  })();
+
+  const dailyImpressions = parsed.cpm.isValid
+    ? dailyBudgets.map((budgetForDay) => (budgetForDay / parsed.cpm.value) * 1000)
+    : dailyBudgets.map(() => 0);
+
+  const dates = buildDateArray(inputs.startDate, campaignDays);
+  const dateLabels = dates.map((date) => ({ iso: formatDateISO(date), human: formatDateHuman(date) }));
+
+  const dailyRows = (() => {
+    if (!dates.length) {
+      return [];
+    }
+    const rows = [];
+    let cumulativeImpressions = 0;
+    let previousReach = 0;
+    for (let i = 0; i < dates.length; i += 1) {
+      const impressionsForDay = dailyImpressions[i] ?? 0;
+      cumulativeImpressions += impressionsForDay;
+      const cumulativeReach = reachFromCumulativeImpressions({
+        impressions: cumulativeImpressions,
+        universeSize: numericValues.audienceSize,
+        averageFrequency: numericValues.avgFreq,
+        model: inputs.reachModel,
+      });
+      const incrementalReach = Math.max(0, cumulativeReach - previousReach);
+      previousReach = cumulativeReach;
+      rows.push({
+        date: dateLabels[i]?.iso ?? '',
+        budget: dailyBudgets[i] ?? 0,
+        impressions: impressionsForDay,
+        incrReach: incrementalReach,
+        cumReach: cumulativeReach,
+      });
+    }
+    return rows;
+  })();
+
+  const totalImpressions = sumNumbers(dailyImpressions);
+  const clicks = totalImpressions * numericValues.ctr;
+  const completeViews = totalImpressions * numericValues.vtr;
+  const viewableImpr = totalImpressions * numericValues.viewability;
+  const reach = reachFromCumulativeImpressions({
+    impressions: totalImpressions,
+    universeSize: numericValues.audienceSize,
+    averageFrequency: numericValues.avgFreq,
+    model: inputs.reachModel,
+  });
+  const reachPct = safeDivide(reach, numericValues.audienceSize, 0);
+  const avgFreqAmongReached = safeDivide(totalImpressions, reach, 0);
+  const grps = reachPct * 100 * avgFreqAmongReached;
+
+  const metrics = {
+    impressions: totalImpressions,
+    clicks,
+    completeViews,
+    viewableImpr,
+    reach,
+    reachPct,
+    avgFreqAmongReached,
+    grps,
+    eCPC: safeDivide(numericValues.budget, clicks, 0),
+    eCPCV: safeDivide(numericValues.budget, completeViews, 0),
+    vCPM: safeDivide(numericValues.budget * 1000, viewableImpr, 0),
+  };
+
+  const neededBudget = (!parsed.cpm.isValid || !parsed.targetImpr.isValid)
+    ? 0
+    : (Math.max(0, parsed.targetImpr.value) * parsed.cpm.value) / 1000;
+
+  return {
+    parsed,
+    numericValues,
+    customShareNumbers,
+    customSharesSum,
+    customSharesAreValid,
+    errors,
+    hasBlockingErrors,
+    dailyBudgets,
+    dailyImpressions,
+    dates,
+    dateLabels,
+    dailyRows,
+    metrics,
+    neededBudget,
+  };
+}
+
 function runSelfChecks() {
   const results = [];
   const close = (a, b, tol = 1e-6) => Math.abs(a - b) <= tol;
 
   const diffSameDay = daysBetweenInclusive('2025-09-01', '2025-09-01') === 1;
   const diffThreeDay = daysBetweenInclusive('2025-09-01', '2025-09-03') === 3;
-  results.push({ name: 'daysBetweenInclusive même jour', ok: diffSameDay });
-  results.push({ name: 'daysBetweenInclusive 3 jours', ok: diffThreeDay });
+  results.push({ name: 'tests.names.daysBetweenSameDay', ok: diffSameDay });
+  results.push({ name: 'tests.names.daysBetweenThreeDays', ok: diffThreeDay });
 
   const dist = distributeEven(100, 3);
   const sumDist = roundTo(sumNumbers(dist), 2);
-  results.push({ name: 'distributeEven somme', ok: sumDist === 100 });
-  results.push({ name: 'distributeEven longueur', ok: dist.length === 3 });
+  results.push({ name: 'tests.names.distributeEvenSum', ok: sumDist === 100 });
+  results.push({ name: 'tests.names.distributeEvenLength', ok: dist.length === 3 });
 
   const impressions = (10000 / 12) * 1000;
-  results.push({ name: 'impressions base', ok: close(impressions, 833333.3333333334) });
+  results.push({ name: 'tests.names.baseImpressions', ok: close(impressions, 833333.3333333334) });
 
   const poissonReach = poissonReachValue(impressions, 5000000);
-  results.push({ name: 'reach Poisson dans la plage', ok: poissonReach > 750000 && poissonReach < 800000 });
+  results.push({ name: 'tests.names.poissonReachRange', ok: poissonReach > 750000 && poissonReach < 800000 });
 
   const reachPct = poissonReach / 5000000;
   const freqObs = impressions / poissonReach;
   const grpsA = reachPct * 100 * freqObs;
   const grpsB = (100 * impressions) / 5000000;
-  results.push({ name: 'GRPs identité Poisson', ok: close(grpsA, grpsB, 1e-9) });
+  results.push({ name: 'tests.names.poissonGrpIdentity', ok: close(grpsA, grpsB, 1e-9) });
 
   return results;
 }
@@ -103,189 +276,17 @@ export function useKpiModel() {
     });
   }, [campaignDays]);
 
-  const parsed = useMemo(() => {
-    const budget = parsePositiveNumber(inputs.budget);
-    const cpm = parsePositiveNumber(inputs.cpm);
-    const ctr = parsePercentageInput(inputs.ctr, { min: 0, max: 100 });
-    const vtr = parsePercentageInput(inputs.vtr, { min: 0, max: 100 });
-    const viewability = parsePercentageInput(inputs.viewability, { min: 0, max: 100 });
-    const avgFreq = parsePositiveNumber(inputs.avgFreq);
-    const audienceSize = parsePositiveNumber(inputs.audienceSize);
-    const targetImpr = parseNonNegativeNumber(inputs.targetImpr);
-
-    return {
-      budget,
-      cpm,
-      ctr,
-      vtr,
-      viewability,
-      avgFreq,
-      audienceSize,
-      targetImpr,
-    };
-  }, [inputs]);
-
-  const numericValues = useMemo(() => ({
-    budget: parsed.budget.isValid ? parsed.budget.value : 0,
-    cpm: parsed.cpm.isValid ? parsed.cpm.value : 0,
-    ctr: parsed.ctr.isValid ? parsed.ctr.value / 100 : 0,
-    vtr: parsed.vtr.isValid ? parsed.vtr.value / 100 : 0,
-    viewability: parsed.viewability.isValid ? parsed.viewability.value / 100 : 0,
-    avgFreq: parsed.avgFreq.isValid ? parsed.avgFreq.value : 0,
-    audienceSize: parsed.audienceSize.isValid ? parsed.audienceSize.value : 0,
-    targetImpr: parsed.targetImpr.isValid ? Math.max(0, parsed.targetImpr.value) : 0,
-  }), [parsed]);
-
-  const customShareNumbers = useMemo(() => (
-    customShares.map((value) => {
-      const parsedValue = parseNumericInput(value);
-      return parsedValue.isValid ? Math.max(0, parsedValue.value) : 0;
-    })
-  ), [customShares]);
-
-  const customSharesSum = useMemo(() => roundTo(sumNumbers(customShareNumbers), 2), [customShareNumbers]);
-
-  const customSharesAreValid = useMemo(() => (
-    inputs.pacingMode !== 'Custom'
-    || campaignDays === 0
-    || Math.abs(customSharesSum - 100) <= 0.5
-  ), [inputs.pacingMode, campaignDays, customSharesSum]);
-
-  const errors = useMemo(() => {
-    const messages = {};
-
-    if (!parsed.budget.isValid) {
-      messages.budget = 'Budget total doit être un nombre positif.';
-    }
-    if (!parsed.cpm.isValid) {
-      messages.cpm = 'CPM doit être un nombre positif.';
-    }
-    if (!parsed.ctr.isValid) {
-      messages.ctr = 'CTR doit être compris entre 0 et 100%.';
-    }
-    if (!parsed.vtr.isValid) {
-      messages.vtr = 'VTR doit être compris entre 0 et 100%.';
-    }
-    if (!parsed.viewability.isValid) {
-      messages.viewability = 'Viewability doit être comprise entre 0 et 100%.';
-    }
-    if (!parsed.avgFreq.isValid) {
-      messages.avgFreq = 'Fréquence moyenne doit être > 0.';
-    }
-    if (!parsed.audienceSize.isValid) {
-      messages.audienceSize = 'Taille d\'univers doit être > 0.';
-    }
-    if (rawDiffDays !== null && rawDiffDays < 0) {
-      messages.dateRange = 'La date de fin doit être postérieure ou égale à la date de début.';
-    }
-    if (inputs.targetImpr && !parsed.targetImpr.isValid) {
-      messages.targetImpr = 'Impressions cibles doit être un nombre valide.';
-    }
-    if (inputs.pacingMode === 'Custom' && campaignDays > 0) {
-      if (!customSharesAreValid) {
-        messages.customShares = `La somme des pourcentages de pacing doit faire 100% (actuellement ${customSharesSum.toFixed(2)}%).`;
-      }
-    }
-    return messages;
-  }, [parsed, rawDiffDays, inputs.pacingMode, campaignDays, customSharesAreValid, customSharesSum]);
-
-  const hasBlockingErrors = useMemo(() => (
-    Boolean(errors.budget)
-    || Boolean(errors.cpm)
-    || Boolean(errors.avgFreq)
-    || Boolean(errors.audienceSize)
-    || Boolean(errors.dateRange)
-    || (inputs.pacingMode === 'Custom' && !customSharesAreValid)
-  ), [errors, inputs.pacingMode, customSharesAreValid]);
-
-  const dailyBudgets = useMemo(() => {
-    if (campaignDays <= 0 || !parsed.budget.isValid) {
-      return [];
-    }
-    if (inputs.pacingMode === 'Custom' && customSharesAreValid) {
-      return distributeByWeights(parsed.budget.value, customShareNumbers);
-    }
-    return distributeEven(parsed.budget.value, campaignDays);
-  }, [campaignDays, parsed.budget, inputs.pacingMode, customSharesAreValid, customShareNumbers]);
-
-  const dailyImpressions = useMemo(() => {
-    if (!parsed.cpm.isValid) {
-      return dailyBudgets.map(() => 0);
-    }
-    return dailyBudgets.map((budgetForDay) => (budgetForDay / parsed.cpm.value) * 1000);
-  }, [dailyBudgets, parsed.cpm]);
-
-  const dates = useMemo(() => buildDateArray(inputs.startDate, campaignDays), [inputs.startDate, campaignDays]);
-
-  const dateLabels = useMemo(
-    () => dates.map((date) => ({ iso: formatDateISO(date), human: formatDateHuman(date) })),
-    [dates],
-  );
-
-  const dailyRows = useMemo(() => {
-    if (!dates.length) return [];
-    const rows = [];
-    let cumulativeImpressions = 0;
-    let previousReach = 0;
-    for (let i = 0; i < dates.length; i += 1) {
-      const impressionsForDay = dailyImpressions[i] ?? 0;
-      cumulativeImpressions += impressionsForDay;
-      const cumulativeReach = reachFromCumulativeImpressions({
-        impressions: cumulativeImpressions,
-        universeSize: numericValues.audienceSize,
-        averageFrequency: numericValues.avgFreq,
-        model: inputs.reachModel,
-      });
-      const incrementalReach = Math.max(0, cumulativeReach - previousReach);
-      previousReach = cumulativeReach;
-      rows.push({
-        date: dateLabels[i]?.iso ?? '',
-        budget: dailyBudgets[i] ?? 0,
-        impressions: impressionsForDay,
-        incrReach: incrementalReach,
-        cumReach: cumulativeReach,
-      });
-    }
-    return rows;
-  }, [dates, dailyImpressions, dailyBudgets, numericValues.audienceSize, numericValues.avgFreq, inputs.reachModel]);
-
-  const totalImpressions = useMemo(() => sumNumbers(dailyImpressions), [dailyImpressions]);
-
-  const metrics = useMemo(() => {
-    const clicks = totalImpressions * numericValues.ctr;
-    const completeViews = totalImpressions * numericValues.vtr;
-    const viewableImpr = totalImpressions * numericValues.viewability;
-    const reach = reachFromCumulativeImpressions({
-      impressions: totalImpressions,
-      universeSize: numericValues.audienceSize,
-      averageFrequency: numericValues.avgFreq,
-      model: inputs.reachModel,
-    });
-    const reachPct = safeDivide(reach, numericValues.audienceSize, 0);
-    const avgFreqAmongReached = safeDivide(totalImpressions, reach, 0);
-    const grps = reachPct * 100 * avgFreqAmongReached;
-
-    return {
-      impressions: totalImpressions,
-      clicks,
-      completeViews,
-      viewableImpr,
-      reach,
-      reachPct,
-      avgFreqAmongReached,
-      grps,
-      eCPC: safeDivide(numericValues.budget, clicks, 0),
-      eCPCV: safeDivide(numericValues.budget, completeViews, 0),
-      vCPM: safeDivide(numericValues.budget * 1000, viewableImpr, 0),
-    };
-  }, [totalImpressions, numericValues, inputs.reachModel]);
-
-  const neededBudget = useMemo(() => {
-    if (!parsed.cpm.isValid || !parsed.targetImpr.isValid) {
-      return 0;
-    }
-    return (Math.max(0, parsed.targetImpr.value) * parsed.cpm.value) / 1000;
-  }, [parsed.cpm, parsed.targetImpr]);
+  const {
+    numericValues,
+    customSharesSum,
+    customSharesAreValid,
+    errors,
+    hasBlockingErrors,
+    dailyRows,
+    metrics,
+    neededBudget,
+    dateLabels,
+  } = computeModelSnapshot({ inputs, customShares, campaignDays, rawDiffDays });
 
   const selfCheckResults = useMemo(() => runSelfChecks(), []);
 
