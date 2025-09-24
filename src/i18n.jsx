@@ -18,7 +18,9 @@ const TRANSLATIONS = {
       fields: {
         currency: 'Devise',
         budget: 'Budget total',
+        costType: "Type de coût",
         cpm: 'CPM',
+        cpc: 'CPC',
         ctr: 'CTR %',
         vtr: 'VTR %',
         viewability: 'Viewability %',
@@ -37,6 +39,10 @@ const TRANSLATIONS = {
         pacingDisabled: 'Ajoute des dates pour activer le pacing.',
       },
       campaignDays: 'Jours de campagne, {{count}}',
+      costTypeOptions: {
+        CPM: 'CPM',
+        CPC: 'CPC',
+      },
       reachModelOptions: {
         Poisson: 'Poisson',
         Simple: 'Simple',
@@ -88,7 +94,7 @@ const TRANSLATIONS = {
       title: 'Objectif impressions, budget requis',
       targetLabel: 'Impressions cibles',
       budgetLabel: 'Budget requis estimé',
-      cpmNote: 'Hypothèse, CPM, {{value}}',
+      costNote: 'Hypothèse, {{label}}, {{value}}',
     },
     export: {
       title: 'Export journalier',
@@ -133,6 +139,8 @@ const TRANSLATIONS = {
     errors: {
       budgetPositive: 'Budget total doit être un nombre positif.',
       cpmPositive: 'CPM doit être un nombre positif.',
+      cpcPositive: 'CPC doit être un nombre positif.',
+      cpcCtrRequired: 'CPC nécessite un CTR strictement positif.',
       ctrRange: 'CTR doit être compris entre 0 et 100%.',
       vtrRange: 'VTR doit être compris entre 0 et 100%.',
       viewabilityRange: 'Viewability doit être comprise entre 0 et 100%.',
@@ -159,7 +167,9 @@ const TRANSLATIONS = {
       fields: {
         currency: 'Currency',
         budget: 'Total budget',
+        costType: 'Cost type',
         cpm: 'CPM',
+        cpc: 'CPC',
         ctr: 'CTR %',
         vtr: 'VTR %',
         viewability: 'Viewability %',
@@ -178,6 +188,10 @@ const TRANSLATIONS = {
         pacingDisabled: 'Add start and end dates to enable pacing.',
       },
       campaignDays: 'Campaign days, {{count}}',
+      costTypeOptions: {
+        CPM: 'CPM',
+        CPC: 'CPC',
+      },
       reachModelOptions: {
         Poisson: 'Poisson',
         Simple: 'Simple',
@@ -229,7 +243,7 @@ const TRANSLATIONS = {
       title: 'Impression goal & required budget',
       targetLabel: 'Target impressions',
       budgetLabel: 'Estimated required budget',
-      cpmNote: 'Assuming CPM {{value}}',
+      costNote: 'Assuming {{label}} {{value}}',
     },
     export: {
       title: 'Daily export',
@@ -274,6 +288,8 @@ const TRANSLATIONS = {
     errors: {
       budgetPositive: 'Total budget must be a positive number.',
       cpmPositive: 'CPM must be a positive number.',
+      cpcPositive: 'CPC must be a positive number.',
+      cpcCtrRequired: 'CPC requires a strictly positive CTR.',
       ctrRange: 'CTR must be between 0 and 100%.',
       vtrRange: 'VTR must be between 0 and 100%.',
       viewabilityRange: 'Viewability must be between 0 and 100%.',

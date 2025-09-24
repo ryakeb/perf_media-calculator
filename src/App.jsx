@@ -36,6 +36,7 @@ function KPIReachCalculatorContent() {
     const descriptors = [];
     if (model.errors.budget) descriptors.push(model.errors.budget);
     if (model.errors.cpm) descriptors.push(model.errors.cpm);
+    if (model.errors.cpc) descriptors.push(model.errors.cpc);
     if (model.errors.avgFreq) descriptors.push(model.errors.avgFreq);
     if (model.errors.audienceSize) descriptors.push(model.errors.audienceSize);
     if (model.errors.dateRange) descriptors.push(model.errors.dateRange);
@@ -107,7 +108,8 @@ function KPIReachCalculatorContent() {
             onTargetImprChange={model.updateInput('targetImpr')}
             neededBudget={model.neededBudget}
             currency={model.inputs.currency}
-            cpm={model.numericValues.cpm}
+            costType={model.inputs.costType ?? 'CPM'}
+            costValue={model.inputs.costType === 'CPC' ? model.numericValues.cpc : model.numericValues.cpm}
             error={model.errors.targetImpr}
           />
           <ExportCard onExport={model.exportCSV} disabled={!model.dailyRows.length || model.hasBlockingErrors} />

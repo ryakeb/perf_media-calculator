@@ -33,6 +33,7 @@ export default function ControlsPanel({
   customSharesSum,
 }) {
   const { t } = useLocale();
+  const costType = inputs.costType ?? 'CPM';
   const getError = useMemo(() => (
     (errorDescriptor) => {
       const message = resolveMessage(errorDescriptor, t);
@@ -70,16 +71,39 @@ export default function ControlsPanel({
               aria-invalid={Boolean(errors.budget)}
             />
           </Field>
-          <Field label={t('controls.fields.cpm')} error={getError(errors.cpm)}>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={inputs.cpm}
-              onChange={(event) => updateInput('cpm')(event.target.value)}
+          <Field label={t('controls.fields.costType')}>
+            <select
+              value={costType}
+              onChange={(event) => updateInput('costType')(event.target.value)}
               className="w-full border rounded-lg p-2"
-              aria-invalid={Boolean(errors.cpm)}
-            />
+            >
+              <option value="CPM">{t('controls.costTypeOptions.CPM')}</option>
+              <option value="CPC">{t('controls.costTypeOptions.CPC')}</option>
+            </select>
           </Field>
+          {costType === 'CPM' ? (
+            <Field label={t('controls.fields.cpm')} error={getError(errors.cpm)}>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={inputs.cpm}
+                onChange={(event) => updateInput('cpm')(event.target.value)}
+                className="w-full border rounded-lg p-2"
+                aria-invalid={Boolean(errors.cpm)}
+              />
+            </Field>
+          ) : (
+            <Field label={t('controls.fields.cpc')} error={getError(errors.cpc)}>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={inputs.cpc}
+                onChange={(event) => updateInput('cpc')(event.target.value)}
+                className="w-full border rounded-lg p-2"
+                aria-invalid={Boolean(errors.cpc)}
+              />
+            </Field>
+          )}
           <Field label={t('controls.fields.ctr')} error={getError(errors.ctr)}>
             <input
               type="text"

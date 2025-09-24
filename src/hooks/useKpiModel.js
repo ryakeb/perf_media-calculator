@@ -26,7 +26,9 @@ import { sumNumbers } from '../utils/number.js';
 const DEFAULT_INPUTS = {
   currency: '€',
   budget: '10000',
-  cpm: '12',
+  costType: 'CPM',
+  cpm: '8.95',
+  cpc: '0.70',
   ctr: '0.5',
   vtr: '70',
   viewability: '80',
@@ -53,6 +55,7 @@ function computeModelSnapshot({ inputs, customShares, campaignDays, rawDiffDays 
   const parsed = {
     budget: parsePositiveNumber(inputs.budget),
     cpm: parsePositiveNumber(inputs.cpm),
+    cpc: parsePositiveNumber(inputs.cpc),
     ctr: parsePercentageInput(inputs.ctr, { min: 0, max: 100 }),
     vtr: parsePercentageInput(inputs.vtr, { min: 0, max: 100 }),
     viewability: parsePercentageInput(inputs.viewability, { min: 0, max: 100 }),
@@ -61,16 +64,34 @@ function computeModelSnapshot({ inputs, customShares, campaignDays, rawDiffDays 
     targetImpr: parseNonNegativeNumber(inputs.targetImpr),
   };
 
+  const costType = inputs.costType === 'CPC' ? 'CPC' : 'CPM';
+
+  const ctrRatio = parsed.ctr.isValid ? parsed.ctr.value / 100 : 0;
+
   const numericValues = {
     budget: parsed.budget.isValid ? parsed.budget.value : 0,
-    cpm: parsed.cpm.isValid ? parsed.cpm.value : 0,
-    ctr: parsed.ctr.isValid ? parsed.ctr.value / 100 : 0,
+    cpm: 0,
+    cpc: parsed.cpc?.isValid ? parsed.cpc.value : 0,
+    ctr: ctrRatio,
     vtr: parsed.vtr.isValid ? parsed.vtr.value / 100 : 0,
     viewability: parsed.viewability.isValid ? parsed.viewability.value / 100 : 0,
     avgFreq: parsed.avgFreq.isValid ? parsed.avgFreq.value : 0,
     audienceSize: parsed.audienceSize.isValid ? parsed.audienceSize.value : 0,
     targetImpr: parsed.targetImpr.isValid ? Math.max(0, parsed.targetImpr.value) : 0,
   };
+
+  numericValues.costType = costType;
+
+  let costInputIsValid = false;
+  if (costType === 'CPM') {
+    if (parsed.cpm.isValid) {
+      numericValues.cpm = parsed.cpm.value;
+      costInputIsValid = true;
+    }
+  } else if (parsed.cpc.isValid && ctrRatio > 0) {
+    numericValues.cpm = parsed.cpc.value * ctrRatio * 1000;
+    costInputIsValid = true;
+  }
 
   const customShareNumbers = customShares.map((value) => {
     const parsedValue = parseNumericInput(value);
@@ -88,8 +109,14 @@ function computeModelSnapshot({ inputs, customShares, campaignDays, rawDiffDays 
   if (!parsed.budget.isValid) {
     errors.budget = { key: 'errors.budgetPositive' };
   }
-  if (!parsed.cpm.isValid) {
-    errors.cpm = { key: 'errors.cpmPositive' };
+  if (costType === 'CPM') {
+    if (!parsed.cpm.isValid) {
+      errors.cpm = { key: 'errors.cpmPositive' };
+    }
+  } else if (!parsed.cpc.isValid) {
+    errors.cpc = { key: 'errors.cpcPositive' };
+  } else if (ctrRatio <= 0) {
+    errors.cpc = { key: 'errors.cpcCtrRequired' };
   }
   if (!parsed.ctr.isValid) {
     errors.ctr = { key: 'errors.ctrRange' };
@@ -121,6 +148,7 @@ function computeModelSnapshot({ inputs, customShares, campaignDays, rawDiffDays 
 
   const hasBlockingErrors = Boolean(errors.budget)
     || Boolean(errors.cpm)
+    || Boolean(errors.cpc)
     || Boolean(errors.avgFreq)
     || Boolean(errors.audienceSize)
     || Boolean(errors.dateRange)
@@ -136,8 +164,8 @@ function computeModelSnapshot({ inputs, customShares, campaignDays, rawDiffDays 
     return distributeEven(parsed.budget.value, campaignDays);
   })();
 
-  const dailyImpressions = parsed.cpm.isValid
-    ? dailyBudgets.map((budgetForDay) => (budgetForDay / parsed.cpm.value) * 1000)
+  const dailyImpressions = costInputIsValid && numericValues.cpm > 0
+    ? dailyBudgets.map((budgetForDay) => (budgetForDay / numericValues.cpm) * 1000)
     : dailyBudgets.map(() => 0);
 
   const dates = buildDateArray(inputs.startDate, campaignDays);
@@ -200,9 +228,12 @@ function computeModelSnapshot({ inputs, customShares, campaignDays, rawDiffDays 
     vCPM: safeDivide(numericValues.budget * 1000, viewableImpr, 0),
   };
 
-  const neededBudget = (!parsed.cpm.isValid || !parsed.targetImpr.isValid)
+  const targetImprValue = parsed.targetImpr.isValid ? Math.max(0, parsed.targetImpr.value) : 0;
+  const neededBudget = (!costInputIsValid || !parsed.targetImpr.isValid)
     ? 0
-    : (Math.max(0, parsed.targetImpr.value) * parsed.cpm.value) / 1000;
+    : (costType === 'CPM')
+      ? (targetImprValue * numericValues.cpm) / 1000
+      : targetImprValue * numericValues.ctr * numericValues.cpc;
 
   return {
     parsed,

@@ -2,9 +2,21 @@ import React from 'react';
 import { formatCurrency } from '../utils/format.js';
 import { resolveMessage, useLocale } from '../i18n.jsx';
 
-export default function InversionCard({ targetImpr, onTargetImprChange, neededBudget, currency, cpm, error }) {
+export default function InversionCard({
+  targetImpr,
+  onTargetImprChange,
+  neededBudget,
+  currency,
+  costType,
+  costValue,
+  error,
+}) {
   const { t } = useLocale();
   const errorMessage = resolveMessage(error, t);
+  const localizedCostType = costType === 'CPC'
+    ? t('controls.costTypeOptions.CPC')
+    : t('controls.costTypeOptions.CPM');
+  const noteValue = formatCurrency(costValue, currency);
 
   return (
     <div className="bg-white rounded-2xl shadow p-4">
@@ -27,7 +39,7 @@ export default function InversionCard({ targetImpr, onTargetImprChange, neededBu
           <div className="text-xl font-semibold">{formatCurrency(neededBudget, currency)}</div>
         </div>
       </div>
-      <p className="text-xs text-slate-500 mt-2">{t('inversion.cpmNote', { value: formatCurrency(cpm, currency) })}</p>
+      <p className="text-xs text-slate-500 mt-2">{t('inversion.costNote', { label: localizedCostType, value: noteValue })}</p>
     </div>
   );
 }
