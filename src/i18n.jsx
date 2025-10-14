@@ -104,6 +104,8 @@ const TRANSLATIONS = {
     dailyTable: {
       title: 'Pacing et reach par jour',
       rowsCount: '{{count}} ligne(s)',
+      showDetails: 'Afficher le détail',
+      hideDetails: 'Masquer le détail',
       headers: {
         date: 'Date',
         budget: 'Budget {{currency}}',
@@ -253,6 +255,8 @@ const TRANSLATIONS = {
     dailyTable: {
       title: 'Daily pacing & reach',
       rowsCount: '{{count}} row(s)',
+      showDetails: 'Show details',
+      hideDetails: 'Hide details',
       headers: {
         date: 'Date',
         budget: 'Budget {{currency}}',
@@ -326,7 +330,7 @@ function getFromDictionary(language, key) {
 }
 
 const LocaleContext = createContext({
-  language: 'fr',
+  language: 'en',
   setLanguage: () => {},
   t: (key, params) => formatMessage(key, params),
 });

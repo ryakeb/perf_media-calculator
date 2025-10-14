@@ -130,7 +130,7 @@ function KPIReachCalculatorContent() {
 }
 
 export default function KPIReachCalculator() {
-  const [language, setLanguage] = useState('fr');
+  const [language, setLanguage] = useState('en');
 
   return (
     <LocaleProvider language={language} setLanguage={setLanguage}>
