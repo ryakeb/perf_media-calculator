@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { UNIVERSE_PRESETS } from '../constants/universePresets.js';
 import { resolveMessage, useLocale } from '../i18n.jsx';
 
@@ -25,7 +25,8 @@ function Card({ title, children }) {
 export default function ControlsPanel({
   inputs,
   updateInput,
-  selectedPreset,
+  selectedPresets,
+  selectedPresetTotals,
   handlePresetChange,
   updateAudienceSize,
   campaignDays,
@@ -45,6 +46,103 @@ export default function ControlsPanel({
   const pacingHelper = inputs.pacingMode === 'Even'
     ? t('controls.helper.pacingEven', { days: campaignDays || 0 })
     : t('controls.helper.pacingCustom', { sum: sumFormatted });
+  const numberFormatter = useMemo(() => new Intl.NumberFormat('fr-BE'), []);
+  const presetMap = useMemo(
+    () => new Map(UNIVERSE_PRESETS.map((preset) => [preset.key, preset])),
+    [],
+  );
+  const [isPresetMenuOpen, setIsPresetMenuOpen] = useState(false);
+  const presetsContainerRef = useRef(null);
+  const presetTotals = selectedPresetTotals ?? {
+    uu: 0,
+    pv: 0,
+    hasPv: false,
+    isCustom: true,
+  };
+  const formatCount = (value) => {
+    const numeric = Number.isFinite(value) ? value : 0;
+    return numberFormatter.format(Math.max(0, Math.round(numeric)));
+  };
+  const presetsTotalsLabel = presetTotals.isCustom
+    ? t('controls.helper.presetsTotalsCustom', { uu: formatCount(presetTotals.uu) })
+    : presetTotals.hasPv
+      ? t('controls.helper.presetsTotalsWithPv', {
+        uu: formatCount(presetTotals.uu),
+        pv: formatCount(presetTotals.pv),
+      })
+      : t('controls.helper.presetsTotalsNoPv', { uu: formatCount(presetTotals.uu) });
+  const selectedLabels = useMemo(
+    () => selectedPresets
+      .map((key) => presetMap.get(key)?.label)
+      .filter(Boolean),
+    [presetMap, selectedPresets],
+  );
+  const presetsButtonLabel = useMemo(() => {
+    if (!selectedPresets.length) {
+      return t('controls.helper.presetsButtonEmpty');
+    }
+    if (selectedPresets.length === 1 && selectedPresets[0] === 'Custom') {
+      const formattedUu = numberFormatter.format(Math.max(0, Math.round(presetTotals.uu)));
+      return t('controls.helper.presetsButtonCustom', { uu: formattedUu });
+    }
+    if (selectedLabels.length === 1) {
+      return selectedLabels[0];
+    }
+    if (selectedLabels.length === 2) {
+      return selectedLabels.join(', ');
+    }
+    return t('controls.helper.presetsButtonMultiple', { count: selectedLabels.length });
+  }, [numberFormatter, presetTotals.uu, selectedLabels, selectedPresets, t]);
+
+  useEffect(() => {
+    if (!isPresetMenuOpen) {
+      return undefined;
+    }
+    const handleClickOutside = (event) => {
+      if (presetsContainerRef.current && !presetsContainerRef.current.contains(event.target)) {
+        setIsPresetMenuOpen(false);
+      }
+    };
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setIsPresetMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isPresetMenuOpen]);
+
+  const togglePresetMenu = () => {
+    setIsPresetMenuOpen((current) => !current);
+  };
+
+  const handlePresetToggle = (presetKey) => {
+    const isSelected = selectedPresets.includes(presetKey);
+    if (!isSelected) {
+      if (presetKey === 'Custom') {
+        handlePresetChange(['Custom']);
+        return;
+      }
+      if (selectedPresets.length === 1 && selectedPresets[0] === 'Custom') {
+        handlePresetChange([presetKey]);
+        return;
+      }
+      handlePresetChange([...selectedPresets, presetKey]);
+      return;
+    }
+
+    if (presetKey === 'Custom') {
+      return;
+    }
+
+    const next = selectedPresets.filter((key) => key !== presetKey);
+    handlePresetChange(next.length ? next : ['Custom']);
+  };
+
 
   return (
     <section className="grid md:grid-cols-3 gap-4">
@@ -139,18 +237,58 @@ export default function ControlsPanel({
 
       <Card title={t('controls.section.reach')}>
         <div className="grid grid-cols-2 gap-3">
-          <Field label={t('controls.fields.presets')}>
-            <select
-              value={selectedPreset}
-              onChange={(event) => handlePresetChange(event.target.value)}
-              className="w-full border rounded-lg p-2"
-            >
-              {UNIVERSE_PRESETS.map((preset) => (
-                <option key={preset.key} value={preset.key}>
-                  {preset.label} ({preset.size.toLocaleString('fr-BE')})
-                </option>
-              ))}
-            </select>
+          <Field
+            label={t('controls.fields.presets')}
+            helper={t('controls.helper.presetsHint')}
+          >
+            <div className="relative" ref={presetsContainerRef}>
+              <button
+                type="button"
+                onClick={togglePresetMenu}
+                className="w-full border rounded-lg p-2 flex items-center justify-between gap-2 bg-white text-left hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                aria-haspopup="listbox"
+                aria-expanded={isPresetMenuOpen}
+              >
+                <span className="block flex-1 truncate">{presetsButtonLabel}</span>
+                <span className="text-xs text-slate-500">{isPresetMenuOpen ? '^' : 'v'}</span>
+              </button>
+              {isPresetMenuOpen && (
+                <div
+                  className="absolute z-10 mt-2 w-full max-h-64 overflow-y-auto rounded-xl border bg-white shadow-lg"
+                  role="listbox"
+                  aria-multiselectable="true"
+                >
+                  <ul className="py-1 space-y-1">
+                    {UNIVERSE_PRESETS.map((preset) => {
+                      const isChecked = selectedPresets.includes(preset.key);
+                      const uuLabel = preset.size.toLocaleString('fr-BE');
+                      const pvLabel = typeof preset.pageViews === 'number'
+                        ? preset.pageViews.toLocaleString('fr-BE')
+                        : null;
+                      return (
+                        <li key={preset.key}>
+                          <label className="flex items-start gap-2 px-3 py-2 text-sm hover:bg-slate-100">
+                            <input
+                              type="checkbox"
+                              className="mt-0.5 h-4 w-4 rounded border-slate-300"
+                              checked={isChecked}
+                              onChange={() => handlePresetToggle(preset.key)}
+                            />
+                            <span className="leading-snug">
+                              <span className="font-medium">{preset.label}</span>
+                              <span className="block text-xs text-slate-500">
+                                {pvLabel ? `${uuLabel} UU · ${pvLabel} PV` : `${uuLabel} UU`}
+                              </span>
+                            </span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              )}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">{presetsTotalsLabel}</div>
           </Field>
           <Field label={t('controls.fields.avgFreq')} error={getError(errors.avgFreq)}>
             <input

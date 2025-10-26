@@ -72,7 +72,8 @@ function KPIReachCalculatorContent() {
         <ControlsPanel
           inputs={model.inputs}
           updateInput={model.updateInput}
-          selectedPreset={model.selectedPreset}
+          selectedPresets={model.selectedPresets}
+          selectedPresetTotals={model.selectedPresetTotals}
           handlePresetChange={model.handlePresetChange}
           updateAudienceSize={model.updateAudienceSize}
           campaignDays={model.campaignDays}

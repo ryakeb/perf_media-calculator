@@ -33,7 +33,7 @@ const DEFAULT_INPUTS = {
   vtr: '70',
   viewability: '80',
   avgFreq: '3',
-  audienceSize: '5000000',
+  audienceSize: '3000000',
   startDate: '',
   endDate: '',
   pacingMode: 'Even',
@@ -50,6 +50,8 @@ function buildPresetMap() {
 }
 
 const PRESET_MAP = buildPresetMap();
+const CUSTOM_PRESET_KEY = 'Custom';
+const CUSTOM_PRESET_DEFAULT_SIZE = PRESET_MAP.get(CUSTOM_PRESET_KEY)?.size ?? 0;
 
 function computeModelSnapshot({ inputs, customShares, campaignDays, rawDiffDays }) {
   const parsed = {
@@ -284,7 +286,7 @@ function runSelfChecks() {
 
 export function useKpiModel() {
   const [inputs, setInputs] = useState(DEFAULT_INPUTS);
-  const [selectedPreset, setSelectedPreset] = useState('Custom');
+  const [selectedPresets, setSelectedPresets] = useState([CUSTOM_PRESET_KEY]);
   const [customShares, setCustomShares] = useState([]);
   const [showChecks, setShowChecks] = useState(false);
 
@@ -328,15 +330,44 @@ export function useKpiModel() {
     }));
   };
 
-  const handlePresetChange = (presetKey) => {
-    setSelectedPreset(presetKey);
-    const preset = PRESET_MAP.get(presetKey);
-    if (preset) {
+  const handlePresetChange = (nextKeys) => {
+    const incoming = (Array.isArray(nextKeys) ? nextKeys : [nextKeys]).filter(Boolean);
+    const filtered = incoming.filter((key) => PRESET_MAP.has(key));
+    let effectiveKeys = filtered.length ? filtered : [CUSTOM_PRESET_KEY];
+
+    if (effectiveKeys.includes(CUSTOM_PRESET_KEY) && effectiveKeys.length > 1) {
+      effectiveKeys = [CUSTOM_PRESET_KEY];
+    }
+
+    setSelectedPresets(effectiveKeys);
+
+    if (effectiveKeys.length === 1 && effectiveKeys[0] === CUSTOM_PRESET_KEY) {
       setInputs((current) => ({
         ...current,
-        audienceSize: String(preset.size),
+        audienceSize: String(CUSTOM_PRESET_DEFAULT_SIZE),
       }));
+      return;
     }
+
+    const totals = effectiveKeys.reduce(
+      (acc, key) => {
+        const preset = PRESET_MAP.get(key);
+        if (!preset) {
+          return acc;
+        }
+        acc.uu += preset.size ?? 0;
+        if (typeof preset.pageViews === 'number') {
+          acc.pv += preset.pageViews;
+        }
+        return acc;
+      },
+      { uu: 0, pv: 0 },
+    );
+
+    setInputs((current) => ({
+      ...current,
+      audienceSize: String(totals.uu),
+    }));
   };
 
   const updateAudienceSize = (value) => {
@@ -344,7 +375,7 @@ export function useKpiModel() {
       ...current,
       audienceSize: value,
     }));
-    setSelectedPreset('Custom');
+    setSelectedPresets([CUSTOM_PRESET_KEY]);
   };
 
   const updateCustomShareAt = (index, value) => {
@@ -363,6 +394,35 @@ export function useKpiModel() {
     const evenShare = roundTo(100 / campaignDays, 2).toFixed(2);
     setCustomShares(Array.from({ length: campaignDays }, () => evenShare));
   };
+
+  const selectedPresetTotals = useMemo(() => {
+    if (!selectedPresets.length) {
+      return { uu: 0, pv: 0, hasPv: false, isCustom: false };
+    }
+    if (selectedPresets.length === 1 && selectedPresets[0] === CUSTOM_PRESET_KEY) {
+      return {
+        uu: numericValues.audienceSize,
+        pv: 0,
+        hasPv: false,
+        isCustom: true,
+      };
+    }
+    return selectedPresets.reduce(
+      (acc, key) => {
+        const preset = PRESET_MAP.get(key);
+        if (!preset) {
+          return acc;
+        }
+        acc.uu += preset.size ?? 0;
+        if (typeof preset.pageViews === 'number') {
+          acc.pv += preset.pageViews;
+          acc.hasPv = true;
+        }
+        return acc;
+      },
+      { uu: 0, pv: 0, hasPv: false, isCustom: false },
+    );
+  }, [numericValues.audienceSize, selectedPresets]);
 
   const exportCSV = () => {
     if (!dailyRows.length) return;
@@ -389,7 +449,7 @@ export function useKpiModel() {
   return {
     inputs,
     updateInput,
-    selectedPreset,
+    selectedPresets,
     handlePresetChange,
     updateAudienceSize,
     numericValues,
@@ -410,5 +470,6 @@ export function useKpiModel() {
     setShowChecks,
     selfCheckResults,
     dateLabels,
+    selectedPresetTotals,
   };
 }
