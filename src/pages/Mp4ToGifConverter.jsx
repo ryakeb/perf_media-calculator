@@ -12,6 +12,7 @@ export default function Mp4ToGifConverter() {
   const [file, setFile] = useState(null);
   const [videoDuration, setVideoDuration] = useState(null);
   const [gifUrl, setGifUrl] = useState(null);
+  const [downloadName, setDownloadName] = useState('media-wecommit.gif');
   const [error, setError] = useState(null);
   const [info, setInfo] = useState(null);
   const [status, setStatus] = useState('idle');
@@ -51,6 +52,8 @@ export default function Mp4ToGifConverter() {
       if (current) URL.revokeObjectURL(current);
       return null;
     });
+    const baseName = nextFile.name ? nextFile.name.replace(/\.[^/.]+$/, '') : 'media-wecommit';
+    setDownloadName(`${baseName}.gif`);
     setVideoDuration(null);
     setError(null);
     setInfo(null);
@@ -225,7 +228,7 @@ export default function Mp4ToGifConverter() {
                 />
                 <a
                   href={gifUrl}
-                  download={`media-wecommit-${Date.now()}.gif`}
+                  download={downloadName}
                   className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   {t('converter.downloadCta')}
