@@ -9,6 +9,53 @@ const TRANSLATIONS = {
       switchToEnglish: 'Passer en anglais',
       switchToFrench: 'Passer en français',
     },
+    home: {
+      brand: 'media.wecommit.be',
+      title: 'Tous les outils internes WeCommit à portée de clic.',
+      subtitle: 'Sélectionnez un module pour optimiser vos performances média ou accélérer la production créative.',
+      cardCta: 'Accéder à l’outil →',
+      cards: {
+        kpi: {
+          title: 'Calculateur KPI / Reach',
+          description: 'Planifiez vos campagnes en quelques minutes avec un modèle flexible et des exports prêts à envoyer.',
+          badge: 'Performance média',
+        },
+        gif: {
+          title: 'Convertisseur MP4 → GIF',
+          description: 'Chargez une courte vidéo, nous générons automatiquement un GIF optimisé à partager partout.',
+          badge: 'Nouveau',
+        },
+      },
+    },
+    converter: {
+      backLink: '← Retour aux outils',
+      title: 'Convertisseur MP4 → GIF',
+      description: 'Conversion 100 % navigateur : importez un MP4 (30s max conseillées) et récupérez un GIF optimisé sans quitter media.wecommit.be.',
+      bullets: {
+        quality: 'Aucune option à régler : framerate 12 FPS et largeur 480 px par défaut.',
+        trimmed: 'Si la vidéo dépasse 30 secondes, nous convertissons uniquement les 30 premières secondes.',
+        privacy: 'Rien ne part sur un serveur : tout reste dans votre navigateur.',
+      },
+      uploadLabel: 'Sélectionnez votre fichier MP4',
+      durationAndSize: 'Durée détectée : {{duration}} · Taille recommandée <= 200 Mo',
+      button: {
+        loadingCore: 'Chargement du moteur…',
+        converting: 'Conversion en cours…',
+        idle: 'Convertir en GIF',
+      },
+      info: {
+        trimmed: 'Votre vidéo dépasse 30 s. Nous avons converti uniquement les 30 premières secondes.',
+        ready: 'GIF prêt à télécharger.',
+      },
+      errors: {
+        metadata: 'Impossible de lire la durée de la vidéo. Merci de réessayer avec un MP4 valide.',
+        noFile: 'Sélectionnez une vidéo MP4 avant de lancer la conversion.',
+        runtime: 'La conversion a échoué. Essayez avec un autre fichier ou réduisez la taille de la vidéo.',
+      },
+      previewTitle: 'Aperçu & téléchargement',
+      previewAlt: 'Prévisualisation du GIF converti',
+      downloadCta: 'Télécharger le GIF',
+    },
     controls: {
       section: {
         purchase: "Paramètres d'achat",
@@ -166,6 +213,53 @@ const TRANSLATIONS = {
       description: 'Speed through proposal prep, calculate impressions, clicks, CPM, VTR, viewability and projected reach across your campaign timeline.',
       switchToEnglish: 'Switch to English',
       switchToFrench: 'Switch to French',
+    },
+    home: {
+      brand: 'media.wecommit.be',
+      title: 'Every internal WeCommit tool at your fingertips.',
+      subtitle: 'Pick a module to boost media performance or speed up creative production.',
+      cardCta: 'Open tool →',
+      cards: {
+        kpi: {
+          title: 'KPI / Reach Calculator',
+          description: 'Plan your campaigns in minutes with a flexible model and share-ready exports.',
+          badge: 'Media performance',
+        },
+        gif: {
+          title: 'MP4 → GIF Converter',
+          description: 'Upload a short video, we instantly generate a high quality GIF you can share anywhere.',
+          badge: 'New',
+        },
+      },
+    },
+    converter: {
+      backLink: '← Back to tools',
+      title: 'MP4 → GIF Converter',
+      description: 'Browser-only conversion: upload an MP4 (30 s max recommended) and get an optimized GIF without leaving media.wecommit.be.',
+      bullets: {
+        quality: 'Zero settings to tweak: we default to 12 FPS and 480 px width.',
+        trimmed: 'If the video is longer than 30 seconds, only the first 30 seconds will be converted.',
+        privacy: 'No upload to a server: everything stays inside your browser.',
+      },
+      uploadLabel: 'Select your MP4 file',
+      durationAndSize: 'Detected duration: {{duration}} · Recommended size <= 200 MB',
+      button: {
+        loadingCore: 'Loading engine…',
+        converting: 'Converting…',
+        idle: 'Convert to GIF',
+      },
+      info: {
+        trimmed: 'Your video is over 30 s. Only the first 30 seconds have been converted.',
+        ready: 'GIF ready to download.',
+      },
+      errors: {
+        metadata: 'We could not read the video duration. Please try again with a valid MP4.',
+        noFile: 'Select an MP4 before starting the conversion.',
+        runtime: 'Conversion failed. Try another file or reduce the video size.',
+      },
+      previewTitle: 'Preview & download',
+      previewAlt: 'Preview of the converted GIF',
+      downloadCta: 'Download GIF',
     },
     controls: {
       section: {
