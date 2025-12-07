@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import ControlsPanel from '../components/ControlsPanel.jsx';
 import SummaryCards from '../components/SummaryCards.jsx';
 import ReachSummary from '../components/ReachSummary.jsx';
@@ -50,6 +51,9 @@ export default function KPIReachCalculator() {
       <div className="max-w-7xl mx-auto">
         <header className="mb-6 flex flex-col md:flex-row md:items-start md:justify-between gap-3">
           <div>
+            <Link to="/" className="text-sm font-medium text-blue-600 hover:underline">
+              {t('converter.backLink')}
+            </Link>
             <h1 className="text-2xl md:text-3xl font-semibold">{t('app.title')}</h1>
             <p className="text-slate-600 mt-1">{t('app.description')}</p>
           </div>

@@ -36,6 +36,18 @@ export default function Home() {
       badge: t('home.cards.gif.badge'),
       to: '/outils/mp4-vers-gif',
     },
+    {
+      title: t('home.cards.svgPng.title'),
+      description: t('home.cards.svgPng.description'),
+      badge: t('home.cards.svgPng.badge'),
+      to: '/outils/svg-vers-png',
+    },
+    {
+      title: t('home.cards.bgRemover.title'),
+      description: t('home.cards.bgRemover.description'),
+      badge: t('home.cards.bgRemover.badge'),
+      to: '/outils/remove-background',
+    },
   ];
 
   return (
