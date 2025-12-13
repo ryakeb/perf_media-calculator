@@ -25,6 +25,11 @@ const TRANSLATIONS = {
           description: 'Chargez une courte vidéo, nous générons automatiquement un GIF optimisé à partager partout.',
           badge: 'Outil image',
         },
+        percentage: {
+          title: 'Calculateur de pourcentages',
+          description: 'Des mini-outils pour calculer rapidement des variations, parts et ajustements sur tes montants.',
+          badge: 'Raccourci chiffrage',
+        },
         svgPng: {
           title: 'Convertisseur SVG → PNG',
           description: 'Transforme tes assets vectoriels en PNG nets, échelle ajustable pour garder la qualité.',
@@ -134,6 +139,50 @@ const TRANSLATIONS = {
       original: 'Image originale',
       originalAlt: 'Aperçu de l’image originale',
       dimensions: 'Dimensions détectées : {{width}} × {{height}} px',
+    },
+    percentageTool: {
+      title: 'Calculateur de pourcentages express',
+      description: 'Quatre mini-outils pour calculer rapidement un pourcentage, une part, une variation ou une hausse/baisse de budget sans ouvrir de tableur.',
+      bullets: {
+        quick: 'Pensé pour les réponses rapides : deux champs suffisent pour obtenir un résultat.',
+        variations: 'Gère autant les parts (%) que les variations positives/négatives.',
+        cleanUi: 'Interface épurée, résultats lisibles en un coup d’œil.',
+      },
+      cards: {
+        percentOf: {
+          title: 'Combien fait X % de…',
+          subtitle: 'Exemple : 20% de 8850.',
+          percentLabel: 'Pourcentage',
+          baseLabel: 'Montant de base',
+          resultLabel: 'Résultat',
+        },
+        share: {
+          title: 'Quelle part représente…',
+          subtitle: 'Calcule le pourcentage que représente une valeur par rapport au total.',
+          partLabel: 'Valeur partielle',
+          totalLabel: 'Total',
+          resultLabel: 'Part en %',
+        },
+        adjust: {
+          title: 'Augmenter / réduire un montant',
+          subtitle: 'Applique une variation pour simuler un budget ou un KPI ajusté.',
+          increase: 'Augmenter',
+          decrease: 'Réduire',
+          baseLabel: 'Montant initial',
+          changeLabel: 'Variation %',
+          resultLabel: 'Montant ajusté',
+          deltaUp: 'Gain : {{value}}',
+          deltaDown: 'Perte : {{value}}',
+          deltaPlaceholder: 'Saisis une variation pour voir l’écart.',
+        },
+        change: {
+          title: 'Variation entre deux valeurs',
+          subtitle: 'Pourcentage d’évolution entre un avant et un après.',
+          fromLabel: 'Valeur de départ',
+          toLabel: 'Valeur d’arrivée',
+          resultLabel: 'Variation %',
+        },
+      },
     },
     controls: {
       section: {
@@ -309,6 +358,11 @@ const TRANSLATIONS = {
           description: 'Upload a short video, we instantly generate a high quality GIF you can share anywhere.',
           badge: 'Image tool',
         },
+        percentage: {
+          title: 'Percentage calculator',
+          description: 'Quick helpers to compute shares, variations, and adjusted amounts without a spreadsheet.',
+          badge: 'Math shortcut',
+        },
         svgPng: {
           title: 'SVG → PNG Converter',
           description: 'Turn vector assets into crisp PNGs with adjustable scale.',
@@ -418,6 +472,50 @@ const TRANSLATIONS = {
       original: 'Original image',
       originalAlt: 'Preview of the original image',
       dimensions: 'Detected dimensions: {{width}} × {{height}} px',
+    },
+    percentageTool: {
+      title: 'Quick percentage helpers',
+      description: 'Four mini-utilities to compute a percentage, a share of a total, a variation, or an adjusted budget without opening a spreadsheet.',
+      bullets: {
+        quick: 'Built for quick answers: two fields are enough to get a result.',
+        variations: 'Handles shares (%) as well as positive or negative variations.',
+        cleanUi: 'Clean interface with instantly readable outputs.',
+      },
+      cards: {
+        percentOf: {
+          title: 'How much is X % of…',
+          subtitle: 'Example: 20% of 8850.',
+          percentLabel: 'Percentage',
+          baseLabel: 'Base amount',
+          resultLabel: 'Result',
+        },
+        share: {
+          title: 'What share does this represent?',
+          subtitle: 'Compute the percentage a value represents out of a total.',
+          partLabel: 'Partial value',
+          totalLabel: 'Total',
+          resultLabel: 'Share %',
+        },
+        adjust: {
+          title: 'Increase / decrease an amount',
+          subtitle: 'Apply a variation to simulate an adjusted budget or KPI.',
+          increase: 'Increase',
+          decrease: 'Decrease',
+          baseLabel: 'Starting amount',
+          changeLabel: 'Change %',
+          resultLabel: 'Adjusted amount',
+          deltaUp: 'Gain: {{value}}',
+          deltaDown: 'Loss: {{value}}',
+          deltaPlaceholder: 'Enter a variation to see the delta.',
+        },
+        change: {
+          title: 'Change between two values',
+          subtitle: 'Percentage variation between before and after.',
+          fromLabel: 'From',
+          toLabel: 'To',
+          resultLabel: 'Change %',
+        },
+      },
     },
     controls: {
       section: {

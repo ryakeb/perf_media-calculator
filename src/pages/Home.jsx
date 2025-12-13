@@ -31,6 +31,12 @@ export default function Home() {
       to: '/outils/kpi-reach',
     },
     {
+      title: t('home.cards.percentage.title'),
+      description: t('home.cards.percentage.description'),
+      badge: t('home.cards.percentage.badge'),
+      to: '/outils/pourcentages',
+    },
+    {
       title: t('home.cards.gif.title'),
       description: t('home.cards.gif.description'),
       badge: t('home.cards.gif.badge'),
