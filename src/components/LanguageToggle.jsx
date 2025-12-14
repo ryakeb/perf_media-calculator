@@ -13,7 +13,7 @@ export default function LanguageToggle({ className = '' }) {
     <button
       type="button"
       onClick={handleClick}
-      className={`px-3 py-1 text-sm rounded-lg border shadow hover:bg-slate-100 transition ${className}`}
+      className={`px-3 py-1 text-sm rounded-lg border shadow hover:bg-slate-100 transition dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-100 ${className}`}
     >
       {label}
     </button>

@@ -4,9 +4,9 @@ import { useLocale } from '../i18n.jsx';
 export default function TestsSection({ showChecks, onToggle, results }) {
   const { t } = useLocale();
   return (
-    <section className="mt-6 bg-white rounded-2xl shadow p-4">
+    <section className="mt-6 bg-white rounded-2xl shadow p-4 border border-slate-100 dark:border-slate-700 dark:bg-slate-800">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">{t('tests.title')}</h3>
+        <h3 className="text-lg font-semibold dark:text-white">{t('tests.title')}</h3>
         <label className="text-sm flex items-center gap-2">
           <input
             type="checkbox"

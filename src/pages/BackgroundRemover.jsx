@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import LanguageToggle from '../components/LanguageToggle.jsx';
+import ThemeToggle from '../components/ThemeToggle.jsx';
 import { useLocale } from '../i18n.jsx';
 
 function clamp(value, min, max) {
@@ -237,29 +238,32 @@ export default function BackgroundRemover() {
   const isBusy = status === 'processing' || status === 'loading';
 
   return (
-    <div className="min-h-screen bg-slate-50 px-6 py-10 text-slate-900">
+    <div className="min-h-screen bg-slate-50 px-6 py-10 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
       <div className="mx-auto flex max-w-5xl flex-col gap-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <Link to="/" className="text-sm font-medium text-blue-600 hover:underline">
+            <Link to="/" className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-300">
               {t('converter.backLink')}
             </Link>
             <h1 className="mt-4 text-3xl font-semibold">{t('bgRemover.title')}</h1>
-            <p className="mt-2 text-base text-slate-600">{t('bgRemover.description')}</p>
-            <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-slate-600">
+            <p className="mt-2 text-base text-slate-600 dark:text-slate-300">{t('bgRemover.description')}</p>
+            <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-300">
               <li>{t('bgRemover.bullets.detect')}</li>
               <li>{t('bgRemover.bullets.tolerance')}</li>
               <li>{t('bgRemover.bullets.privacy')}</li>
             </ul>
           </div>
-          <LanguageToggle />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <LanguageToggle />
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <div className="grid gap-6 lg:grid-cols-[1.15fr,0.85fr]">
             <div className="space-y-5">
               <div>
-                <label htmlFor="imageInput" className="text-sm font-medium text-slate-700">
+                <label htmlFor="imageInput" className="text-sm font-medium text-slate-700 dark:text-slate-200">
                   {t('bgRemover.uploadLabel')}
                 </label>
                 <input
@@ -267,13 +271,13 @@ export default function BackgroundRemover() {
                   type="file"
                   accept="image/png,image/jpeg,image/webp,image/jpg"
                   onChange={handleFileChange}
-                  className="mt-2 block w-full cursor-pointer rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm"
+                  className="mt-2 block w-full cursor-pointer rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm dark:border-slate-600 dark:bg-slate-900"
                 />
-                {detectedLabel && <div className="mt-2 text-xs text-slate-500">{detectedLabel}</div>}
+                {detectedLabel && <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">{detectedLabel}</div>}
               </div>
 
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 space-y-3">
-                <div className="flex items-center justify-between text-sm font-medium text-slate-700">
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 space-y-3 dark:border-slate-700 dark:bg-slate-900">
+                <div className="flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-200">
                   <span>{t('bgRemover.detectedColor')}</span>
                   <span className="inline-flex items-center gap-2">
                     <span
@@ -285,15 +289,15 @@ export default function BackgroundRemover() {
                       type="color"
                       value={backgroundColor}
                       onChange={(event) => setBackgroundColor(event.target.value)}
-                      className="h-8 w-12 cursor-pointer rounded border border-slate-200 bg-white"
+                      className="h-8 w-12 cursor-pointer rounded border border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800"
                     />
                   </span>
                 </div>
-                <p className="text-xs text-slate-500">{t('bgRemover.pickInstruction')}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{t('bgRemover.pickInstruction')}</p>
               </div>
 
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                <div className="flex items-center justify-between text-sm font-medium text-slate-700">
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
+                <div className="flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-200">
                   <span>{t('bgRemover.toleranceLabel')}</span>
                   <span>{tolerance}</span>
                 </div>
@@ -304,65 +308,65 @@ export default function BackgroundRemover() {
                   step="1"
                   value={tolerance}
                   onChange={(event) => setTolerance(parseInt(event.target.value, 10))}
-                  className="mt-3 w-full accent-blue-600"
+                  className="mt-3 w-full accent-blue-600 dark:accent-blue-400"
                 />
-                <p className="mt-2 text-xs text-slate-500">{t('bgRemover.toleranceHint')}</p>
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{t('bgRemover.toleranceHint')}</p>
               </div>
 
               <button
                 type="button"
                 onClick={handleConvert}
                 disabled={!sourceUrl || isBusy}
-                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow disabled:cursor-not-allowed disabled:bg-slate-300"
+                className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow disabled:cursor-not-allowed disabled:bg-slate-300 dark:bg-blue-500 dark:disabled:bg-slate-700"
               >
                 {isBusy ? t('bgRemover.button.processing') : t('bgRemover.button.idle')}
               </button>
 
               {errorMessage && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{errorMessage}</div>
+                <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-100">{errorMessage}</div>
               )}
               {infoMessage && !errorMessage && (
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{infoMessage}</div>
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100">{infoMessage}</div>
               )}
             </div>
 
             <div className="space-y-4">
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                <div className="mb-2 text-sm font-semibold text-slate-700">{t('bgRemover.original')}</div>
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900">
+                <div className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-200">{t('bgRemover.original')}</div>
                 {sourceUrl ? (
                   <img
                     src={sourceUrl}
                     alt={t('bgRemover.originalAlt')}
                     onClick={handlePickColor}
-                    className="max-h-72 w-full cursor-crosshair rounded-lg border border-slate-200 object-contain bg-white"
+                    className="max-h-72 w-full cursor-crosshair rounded-lg border border-slate-200 object-contain bg-white dark:border-slate-600 dark:bg-slate-800"
                     title={t('bgRemover.pickInstruction')}
                   />
                 ) : (
-                  <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white text-sm text-slate-500">
+                  <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     {t('bgRemover.emptyState')}
                   </div>
                 )}
               </div>
 
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                <div className="mb-2 text-sm font-semibold text-slate-700">{t('bgRemover.previewTitle')}</div>
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900">
+                <div className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-200">{t('bgRemover.previewTitle')}</div>
                 {resultUrl ? (
                   <div className="space-y-3">
                     <img
                       src={resultUrl}
                       alt={t('bgRemover.previewAlt')}
-                      className="max-h-72 w-full rounded-lg border border-slate-200 object-contain bg-white"
+                      className="max-h-72 w-full rounded-lg border border-slate-200 object-contain bg-white dark:border-slate-600 dark:bg-slate-800"
                     />
                     <a
                       href={resultUrl}
                       download={downloadName}
-                      className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                      className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-700"
                     >
                       {t('bgRemover.downloadCta')}
                     </a>
                   </div>
                 ) : (
-                  <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white text-sm text-slate-500">
+                  <div className="flex h-48 items-center justify-center rounded-lg border border-dashed border-slate-200 bg-white text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300">
                     {t('bgRemover.previewPlaceholder')}
                   </div>
                 )}

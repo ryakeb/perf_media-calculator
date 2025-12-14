@@ -19,23 +19,23 @@ export default function CustomPacingEditor({
   const errorMessage = resolveMessage(error, t);
 
   return (
-    <section className="mt-4 bg-white rounded-2xl shadow">
+    <section className="mt-4 bg-white rounded-2xl shadow border border-slate-100 dark:border-slate-700 dark:bg-slate-800">
       <div className="p-4 flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">{t('customPacing.title')}</h3>
-          <p className="text-sm text-slate-600">{t('customPacing.subtitle')}</p>
+          <h3 className="text-lg font-semibold dark:text-white">{t('customPacing.title')}</h3>
+          <p className="text-sm text-slate-600 dark:text-slate-300">{t('customPacing.subtitle')}</p>
         </div>
         <button
           type="button"
           onClick={resetCustomShares}
-          className="px-3 py-1 text-sm rounded-lg border shadow hover:bg-slate-50"
+          className="px-3 py-1 text-sm rounded-lg border shadow hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:hover:bg-slate-700"
         >
           {t('customPacing.reset')}
         </button>
       </div>
       <div className="overflow-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-100">
+        <table className="w-full text-sm text-slate-900 dark:text-slate-100">
+          <thead className="bg-slate-100 dark:bg-slate-700/80">
             <tr>
               <th className="text-left p-2">{t('customPacing.table.date')}</th>
               <th className="text-right p-2">{t('customPacing.table.share')}</th>
@@ -43,7 +43,7 @@ export default function CustomPacingEditor({
           </thead>
           <tbody>
             {dateLabels.map((label, index) => (
-              <tr key={label.iso} className="odd:bg-white even:bg-slate-50">
+              <tr key={label.iso} className="odd:bg-white even:bg-slate-50 dark:odd:bg-slate-800 dark:even:bg-slate-900/60">
                 <td className="p-2 whitespace-nowrap">{label.human}</td>
                 <td className="p-2 text-right">
                   <input
@@ -51,7 +51,7 @@ export default function CustomPacingEditor({
                     inputMode="decimal"
                     value={customShares[index] ?? ''}
                     onChange={(event) => updateCustomShareAt(index, event.target.value)}
-                    className="w-28 border rounded-lg p-2 text-right"
+                    className="w-28 border rounded-lg p-2 text-right bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
                   />
                   <span className="ml-1">%</span>
                 </td>
@@ -60,9 +60,9 @@ export default function CustomPacingEditor({
           </tbody>
         </table>
       </div>
-      <div className="p-4 flex items-center justify-between border-t text-sm">
+      <div className="p-4 flex items-center justify-between border-t text-sm dark:border-slate-700">
         <div>{t('customPacing.total', { value: sumFormatted })}</div>
-        {errorMessage && <div className="text-rose-600">{errorMessage}</div>}
+        {errorMessage && <div className="text-rose-600 dark:text-rose-300">{errorMessage}</div>}
       </div>
     </section>
   );

@@ -2,21 +2,24 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { UNIVERSE_PRESETS } from '../constants/universePresets.js';
 import { resolveMessage, useLocale } from '../i18n.jsx';
 
+const INPUT_STYLES = 'w-full border rounded-lg p-2 bg-white dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100';
+const CARD_STYLES = 'bg-white rounded-2xl shadow p-4 space-y-3 border border-slate-100 dark:border-slate-700 dark:bg-slate-800';
+
 function Field({ label, error, helper, children }) {
   return (
-    <label className="text-sm flex flex-col space-y-1">
+    <label className="text-sm flex flex-col space-y-1 dark:text-slate-100">
       <span>{label}</span>
       {children}
-      {helper && !error && <span className="text-xs text-slate-500">{helper}</span>}
-      {error && <span className="text-xs text-rose-600">{error}</span>}
+      {helper && !error && <span className="text-xs text-slate-500 dark:text-slate-400">{helper}</span>}
+      {error && <span className="text-xs text-rose-600 dark:text-rose-300">{error}</span>}
     </label>
   );
 }
 
 function Card({ title, children }) {
   return (
-    <div className="bg-white rounded-2xl shadow p-4 space-y-3">
-      <h2 className="text-lg font-semibold">{title}</h2>
+    <div className={CARD_STYLES}>
+      <h2 className="text-lg font-semibold dark:text-white">{title}</h2>
       {children}
     </div>
   );
@@ -152,7 +155,7 @@ export default function ControlsPanel({
             <select
               value={inputs.currency}
               onChange={(event) => updateInput('currency')(event.target.value)}
-              className="w-full border rounded-lg p-2"
+              className={INPUT_STYLES}
             >
               <option value="€">€</option>
               <option value="$">$</option>
@@ -165,7 +168,7 @@ export default function ControlsPanel({
               inputMode="decimal"
               value={inputs.budget}
               onChange={(event) => updateInput('budget')(event.target.value)}
-              className="w-full border rounded-lg p-2"
+              className={INPUT_STYLES}
               aria-invalid={Boolean(errors.budget)}
             />
           </Field>
@@ -173,7 +176,7 @@ export default function ControlsPanel({
             <select
               value={costType}
               onChange={(event) => updateInput('costType')(event.target.value)}
-              className="w-full border rounded-lg p-2"
+              className={INPUT_STYLES}
             >
               <option value="CPM">{t('controls.costTypeOptions.CPM')}</option>
               <option value="CPC">{t('controls.costTypeOptions.CPC')}</option>
@@ -186,7 +189,7 @@ export default function ControlsPanel({
                 inputMode="decimal"
                 value={inputs.cpm}
                 onChange={(event) => updateInput('cpm')(event.target.value)}
-                className="w-full border rounded-lg p-2"
+                className={INPUT_STYLES}
                 aria-invalid={Boolean(errors.cpm)}
               />
             </Field>
@@ -197,7 +200,7 @@ export default function ControlsPanel({
                 inputMode="decimal"
                 value={inputs.cpc}
                 onChange={(event) => updateInput('cpc')(event.target.value)}
-                className="w-full border rounded-lg p-2"
+                className={INPUT_STYLES}
                 aria-invalid={Boolean(errors.cpc)}
               />
             </Field>
@@ -208,7 +211,7 @@ export default function ControlsPanel({
               inputMode="decimal"
               value={inputs.ctr}
               onChange={(event) => updateInput('ctr')(event.target.value)}
-              className="w-full border rounded-lg p-2"
+              className={INPUT_STYLES}
               aria-invalid={Boolean(errors.ctr)}
             />
           </Field>
@@ -218,7 +221,7 @@ export default function ControlsPanel({
               inputMode="decimal"
               value={inputs.vtr}
               onChange={(event) => updateInput('vtr')(event.target.value)}
-              className="w-full border rounded-lg p-2"
+              className={INPUT_STYLES}
               aria-invalid={Boolean(errors.vtr)}
             />
           </Field>
@@ -228,7 +231,7 @@ export default function ControlsPanel({
               inputMode="decimal"
               value={inputs.viewability}
               onChange={(event) => updateInput('viewability')(event.target.value)}
-              className="w-full border rounded-lg p-2"
+              className={INPUT_STYLES}
               aria-invalid={Boolean(errors.viewability)}
             />
           </Field>
@@ -245,16 +248,16 @@ export default function ControlsPanel({
               <button
                 type="button"
                 onClick={togglePresetMenu}
-                className="w-full border rounded-lg p-2 flex items-center justify-between gap-2 bg-white text-left hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                className="w-full border rounded-lg p-2 flex items-center justify-between gap-2 bg-white text-left hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 dark:bg-slate-900 dark:border-slate-600 dark:hover:border-slate-500 dark:focus-visible:ring-slate-500"
                 aria-haspopup="listbox"
                 aria-expanded={isPresetMenuOpen}
               >
                 <span className="block flex-1 truncate">{presetsButtonLabel}</span>
-                <span className="text-xs text-slate-500">{isPresetMenuOpen ? '^' : 'v'}</span>
+                <span className="text-xs text-slate-500 dark:text-slate-300">{isPresetMenuOpen ? '^' : 'v'}</span>
               </button>
               {isPresetMenuOpen && (
                 <div
-                  className="absolute z-10 mt-2 w-full max-h-64 overflow-y-auto rounded-xl border bg-white shadow-lg"
+                  className="absolute z-10 mt-2 w-full max-h-64 overflow-y-auto rounded-xl border bg-white shadow-lg dark:border-slate-600 dark:bg-slate-900"
                   role="listbox"
                   aria-multiselectable="true"
                 >
@@ -267,16 +270,16 @@ export default function ControlsPanel({
                         : null;
                       return (
                         <li key={preset.key}>
-                          <label className="flex items-start gap-2 px-3 py-2 text-sm hover:bg-slate-100">
+                          <label className="flex items-start gap-2 px-3 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-800">
                             <input
                               type="checkbox"
-                              className="mt-0.5 h-4 w-4 rounded border-slate-300"
+                              className="mt-0.5 h-4 w-4 rounded border-slate-300 dark:border-slate-500"
                               checked={isChecked}
                               onChange={() => handlePresetToggle(preset.key)}
                             />
                             <span className="leading-snug">
                               <span className="font-medium">{preset.label}</span>
-                              <span className="block text-xs text-slate-500">
+                              <span className="block text-xs text-slate-500 dark:text-slate-400">
                                 {pvLabel ? `${uuLabel} UU · ${pvLabel} PV` : `${uuLabel} UU`}
                               </span>
                             </span>
@@ -288,7 +291,7 @@ export default function ControlsPanel({
                 </div>
               )}
             </div>
-            <div className="text-xs text-slate-500 mt-1">{presetsTotalsLabel}</div>
+            <div className="text-xs text-slate-500 mt-1 dark:text-slate-400">{presetsTotalsLabel}</div>
           </Field>
           <Field label={t('controls.fields.avgFreq')} error={getError(errors.avgFreq)}>
             <input
@@ -296,7 +299,7 @@ export default function ControlsPanel({
               inputMode="decimal"
               value={inputs.avgFreq}
               onChange={(event) => updateInput('avgFreq')(event.target.value)}
-              className="w-full border rounded-lg p-2"
+              className={INPUT_STYLES}
               aria-invalid={Boolean(errors.avgFreq)}
             />
           </Field>
@@ -306,7 +309,7 @@ export default function ControlsPanel({
               inputMode="numeric"
               value={inputs.audienceSize}
               onChange={(event) => updateAudienceSize(event.target.value)}
-              className="w-full border rounded-lg p-2"
+              className={INPUT_STYLES}
               aria-invalid={Boolean(errors.audienceSize)}
             />
           </Field>
@@ -314,13 +317,13 @@ export default function ControlsPanel({
             <select
               value={inputs.reachModel}
               onChange={(event) => updateInput('reachModel')(event.target.value)}
-              className="w-full border rounded-lg p-2"
+              className={INPUT_STYLES}
             >
               <option value="Poisson">{t('controls.reachModelOptions.Poisson')}</option>
               <option value="Simple">{t('controls.reachModelOptions.Simple')}</option>
             </select>
           </Field>
-          <p className="col-span-2 text-xs text-slate-500">
+          <p className="col-span-2 text-xs text-slate-500 dark:text-slate-400">
             {t('controls.helper.poissonInfo')}
           </p>
         </div>
@@ -333,7 +336,7 @@ export default function ControlsPanel({
               type="date"
               value={inputs.startDate}
               onChange={(event) => updateInput('startDate')(event.target.value)}
-              className="w-full border rounded-lg p-2"
+              className={INPUT_STYLES}
             />
           </Field>
           <Field label={t('controls.fields.end')} error={getError(errors.dateRange)}>
@@ -341,7 +344,7 @@ export default function ControlsPanel({
               type="date"
               value={inputs.endDate}
               onChange={(event) => updateInput('endDate')(event.target.value)}
-              className="w-full border rounded-lg p-2"
+              className={INPUT_STYLES}
             />
           </Field>
           <Field
@@ -352,13 +355,13 @@ export default function ControlsPanel({
             <select
               value={inputs.pacingMode}
               onChange={(event) => updateInput('pacingMode')(event.target.value)}
-              className="w-full border rounded-lg p-2"
+              className={INPUT_STYLES}
             >
               <option value="Even">{t('controls.pacingOptions.Even')}</option>
               <option value="Custom">{t('controls.pacingOptions.Custom')}</option>
             </select>
           </Field>
-          <div className="col-span-2 text-sm text-slate-600">
+          <div className="col-span-2 text-sm text-slate-600 dark:text-slate-300">
             {t('controls.campaignDays', { count: campaignDays || 0 })}
           </div>
         </div>

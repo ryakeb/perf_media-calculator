@@ -8,6 +8,8 @@ const TRANSLATIONS = {
       description: "Accélère la préparation de tes recommandations, calcule impressions, clics, CPM, VTR, viewability et reach projeté sur toute la campagne.",
       switchToEnglish: 'Passer en anglais',
       switchToFrench: 'Passer en français',
+      switchToDark: 'Passer en mode sombre',
+      switchToLight: 'Passer en mode clair',
     },
     home: {
       brand: 'media.wecommit.be',
@@ -341,6 +343,8 @@ const TRANSLATIONS = {
       description: 'Speed through proposal prep, calculate impressions, clicks, CPM, VTR, viewability and projected reach across your campaign timeline.',
       switchToEnglish: 'Switch to English',
       switchToFrench: 'Switch to French',
+      switchToDark: 'Switch to dark mode',
+      switchToLight: 'Switch to light mode',
     },
     home: {
       brand: 'media.wecommit.be',

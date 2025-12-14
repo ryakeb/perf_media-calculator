@@ -10,6 +10,7 @@ import TestsSection from '../components/TestsSection.jsx';
 import NotesSection from '../components/NotesSection.jsx';
 import CustomPacingEditor from '../components/CustomPacingEditor.jsx';
 import LanguageToggle from '../components/LanguageToggle.jsx';
+import ThemeToggle from '../components/ThemeToggle.jsx';
 import { useKpiModel } from '../hooks/useKpiModel.js';
 import { resolveMessage, useLocale } from '../i18n.jsx';
 
@@ -20,7 +21,7 @@ function ErrorBanner({ errors }) {
   }
 
   return (
-    <div className="mb-4 border border-rose-200 bg-rose-50 text-rose-700 rounded-xl p-4 text-sm">
+    <div className="mb-4 border border-rose-200 bg-rose-50 text-rose-700 rounded-xl p-4 text-sm dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-100">
       <ul className="list-disc pl-5 space-y-1">
         {errors.map((error, index) => (
           <li key={error?.key ?? index}>{resolveMessage(error, t)}</li>
@@ -47,17 +48,20 @@ export default function KPIReachCalculator() {
   }, [model.errors]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 p-6">
+    <div className="min-h-screen bg-slate-50 text-slate-900 p-6 dark:bg-slate-900 dark:text-slate-100">
       <div className="max-w-7xl mx-auto">
         <header className="mb-6 flex flex-col md:flex-row md:items-start md:justify-between gap-3">
           <div>
-            <Link to="/" className="text-sm font-medium text-blue-600 hover:underline">
+            <Link to="/" className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-300">
               {t('converter.backLink')}
             </Link>
             <h1 className="text-2xl md:text-3xl font-semibold">{t('app.title')}</h1>
-            <p className="text-slate-600 mt-1">{t('app.description')}</p>
+            <p className="text-slate-600 mt-1 dark:text-slate-300">{t('app.description')}</p>
           </div>
-          <LanguageToggle />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <LanguageToggle />
+          </div>
         </header>
 
         <ErrorBanner errors={blockingErrorMessages} />

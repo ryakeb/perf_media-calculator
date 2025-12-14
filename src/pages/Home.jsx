@@ -1,22 +1,23 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import LanguageToggle from '../components/LanguageToggle.jsx';
+import ThemeToggle from '../components/ThemeToggle.jsx';
 import { useLocale } from '../i18n.jsx';
 
 function ToolCard({ title, description, to, badge, cta }) {
   return (
     <Link
       to={to}
-      className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+      className="group flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800"
     >
       <div>
-        <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+        <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-200">
           {badge}
         </span>
-        <h3 className="mt-4 text-xl font-semibold text-slate-900 group-hover:text-blue-600">{title}</h3>
-        <p className="mt-2 text-sm text-slate-600">{description}</p>
+        <h3 className="mt-4 text-xl font-semibold text-slate-900 group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-300">{title}</h3>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{description}</p>
       </div>
-      <div className="mt-5 text-sm font-medium text-blue-600">{cta}</div>
+      <div className="mt-5 text-sm font-medium text-blue-600 dark:text-blue-300">{cta}</div>
     </Link>
   );
 }
@@ -57,15 +58,18 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white text-slate-900 dark:from-slate-950 dark:to-slate-900 dark:text-slate-100">
       <div className="mx-auto flex max-w-5xl flex-col gap-10 px-6 py-12">
         <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-wide text-blue-600">{t('home.brand')}</p>
+            <p className="text-sm uppercase tracking-wide text-blue-600 dark:text-blue-300">{t('home.brand')}</p>
             <h1 className="mt-3 text-3xl font-semibold md:text-4xl">{t('home.title')}</h1>
-            <p className="mt-3 max-w-2xl text-base text-slate-600">{t('home.subtitle')}</p>
+            <p className="mt-3 max-w-2xl text-base text-slate-600 dark:text-slate-300">{t('home.subtitle')}</p>
           </div>
-          <LanguageToggle />
+          <div className="flex items-center gap-3 self-start">
+            <ThemeToggle />
+            <LanguageToggle />
+          </div>
         </header>
 
         <section className="grid gap-6 md:grid-cols-2">

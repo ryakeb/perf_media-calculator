@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import LanguageToggle from '../components/LanguageToggle.jsx';
+import ThemeToggle from '../components/ThemeToggle.jsx';
 import { useLocale } from '../i18n.jsx';
 
 function parseDimensions(svgText) {
@@ -183,28 +184,31 @@ export default function SvgToPngConverter() {
   const isProcessing = status === 'processing';
 
   return (
-    <div className="min-h-screen bg-slate-50 px-6 py-10 text-slate-900">
+    <div className="min-h-screen bg-slate-50 px-6 py-10 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
       <div className="mx-auto flex max-w-4xl flex-col gap-8">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <Link to="/" className="text-sm font-medium text-blue-600 hover:underline">
+            <Link to="/" className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-300">
               {t('converter.backLink')}
             </Link>
             <h1 className="mt-4 text-3xl font-semibold">{t('svgConverter.title')}</h1>
-            <p className="mt-2 text-base text-slate-600">{t('svgConverter.description')}</p>
-            <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-slate-600">
+            <p className="mt-2 text-base text-slate-600 dark:text-slate-300">{t('svgConverter.description')}</p>
+            <ul className="mt-4 list-disc space-y-1 pl-5 text-sm text-slate-600 dark:text-slate-300">
               <li>{t('svgConverter.bullets.quality')}</li>
               <li>{t('svgConverter.bullets.background')}</li>
               <li>{t('svgConverter.bullets.privacy')}</li>
             </ul>
           </div>
-          <LanguageToggle />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <LanguageToggle />
+          </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <div className="space-y-5">
             <div>
-              <label htmlFor="svgInput" className="text-sm font-medium text-slate-700">
+              <label htmlFor="svgInput" className="text-sm font-medium text-slate-700 dark:text-slate-200">
                 {t('svgConverter.uploadLabel')}
               </label>
               <input
@@ -212,16 +216,16 @@ export default function SvgToPngConverter() {
                 type="file"
                 accept=".svg,image/svg+xml"
                 onChange={handleFileChange}
-                className="mt-2 block w-full cursor-pointer rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm"
+                className="mt-2 block w-full cursor-pointer rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm dark:border-slate-600 dark:bg-slate-900"
               />
-              <div className="mt-2 text-xs text-slate-500">
+              <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
                 {detectedLabel}
               </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
-                <div className="flex items-center justify-between text-sm font-medium text-slate-700">
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
+                <div className="flex items-center justify-between text-sm font-medium text-slate-700 dark:text-slate-200">
                   <span>{t('svgConverter.scaleLabel')}</span>
                   <span>×{scale.toFixed(2)}</span>
                 </div>
@@ -232,14 +236,14 @@ export default function SvgToPngConverter() {
                   step="0.25"
                   value={scale}
                   onChange={(event) => setScale(parseFloat(event.target.value))}
-                  className="mt-3 w-full accent-blue-600"
+                  className="mt-3 w-full accent-blue-600 dark:accent-blue-400"
                 />
-                <p className="mt-2 text-xs text-slate-500">{outputLabel}</p>
+                <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{outputLabel}</p>
               </div>
 
-              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 space-y-3">
-                <div className="text-sm font-medium text-slate-700">{t('svgConverter.backgroundLabel')}</div>
-                <label className="flex items-center gap-2 text-sm text-slate-700">
+              <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 space-y-3 dark:border-slate-700 dark:bg-slate-900">
+                <div className="text-sm font-medium text-slate-700 dark:text-slate-200">{t('svgConverter.backgroundLabel')}</div>
+                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                   <input
                     type="radio"
                     name="backgroundMode"
@@ -249,7 +253,7 @@ export default function SvgToPngConverter() {
                   />
                   {t('svgConverter.backgroundOptions.transparent')}
                 </label>
-                <label className="flex items-center gap-2 text-sm text-slate-700">
+                <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
                   <input
                     type="radio"
                     name="backgroundMode"
@@ -259,14 +263,14 @@ export default function SvgToPngConverter() {
                   />
                   {t('svgConverter.backgroundOptions.color')}
                 </label>
-                <div className="flex items-center gap-3 text-sm text-slate-700">
-                  <span className="text-xs text-slate-500">{t('svgConverter.colorLabel')}</span>
+                <div className="flex items-center gap-3 text-sm text-slate-700 dark:text-slate-200">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">{t('svgConverter.colorLabel')}</span>
                   <input
                     type="color"
                     value={backgroundColor}
                     onChange={(event) => setBackgroundColor(event.target.value)}
                     disabled={!fillBackground}
-                    className="h-8 w-12 cursor-pointer rounded border border-slate-200 bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                    className="h-8 w-12 cursor-pointer rounded border border-slate-200 bg-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-600 dark:bg-slate-800"
                   />
                 </div>
               </div>
@@ -276,16 +280,16 @@ export default function SvgToPngConverter() {
               type="button"
               onClick={handleConvert}
               disabled={!svgContent || isProcessing}
-              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="inline-flex items-center justify-center rounded-xl bg-blue-600 px-5 py-2 text-sm font-semibold text-white shadow disabled:cursor-not-allowed disabled:bg-slate-300 dark:bg-blue-500 dark:disabled:bg-slate-700"
             >
               {isProcessing ? t('svgConverter.button.processing') : t('svgConverter.button.idle')}
             </button>
 
             {errorMessage && (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600">{errorMessage}</div>
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-600 dark:border-rose-800 dark:bg-rose-950/40 dark:text-rose-100">{errorMessage}</div>
             )}
             {infoMessage && !errorMessage && (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{infoMessage}</div>
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-100">{infoMessage}</div>
             )}
 
             {pngUrl && (
@@ -294,12 +298,12 @@ export default function SvgToPngConverter() {
                 <img
                   src={pngUrl}
                   alt={t('svgConverter.previewAlt')}
-                  className="max-h-80 w-full rounded-xl border border-slate-200 object-contain bg-white"
+                  className="max-h-80 w-full rounded-xl border border-slate-200 object-contain bg-white dark:border-slate-600 dark:bg-slate-900"
                 />
                 <a
                   href={pngUrl}
                   download={downloadName}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-100 dark:hover:bg-slate-700"
                 >
                   {t('svgConverter.downloadCta')}
                 </a>
