@@ -14,6 +14,8 @@ const TYPE_METRICS = {
   CTV: ['completion', 'reach', 'frequency'],
 };
 
+const ALL_METRICS = ['vtr', 'completeViews', 'viewability', 'ctr', 'reach', 'frequency', 'completion'];
+
 const DEFAULT_CAMPAIGN = {
   id: null,
   name: '',
@@ -51,6 +53,8 @@ function getMetricsForType(type) {
   return TYPE_METRICS[type] ?? [];
 }
 
+const hasValue = (value) => value !== '' && value !== undefined && value !== null;
+
 function scoreFromRatio(ratio) {
   if (!Number.isFinite(ratio) || ratio <= 0) return 0;
   if (ratio >= 1) {
@@ -81,7 +85,17 @@ function computeDerived(campaign) {
     ? 100
     : 100 - Math.min(100, Math.abs(deltaPct) * 100);
 
-  const metricsKeys = getMetricsForType(campaign.type);
+  const typeMetrics = getMetricsForType(campaign.type);
+  const typedKeys = typeMetrics.filter((key) => {
+    const metric = campaign.metrics?.[key];
+    return metric && (hasValue(metric.actual) || hasValue(metric.target));
+  });
+  const otherKeys = ALL_METRICS.filter((key) => {
+    if (typeMetrics.includes(key)) return false;
+    const metric = campaign.metrics?.[key];
+    return metric && (hasValue(metric.actual) || hasValue(metric.target));
+  });
+  const metricsKeys = [...typedKeys, ...otherKeys];
   const metricSummaries = metricsKeys.map((key) => {
     const actual = toNumber(campaign.metrics?.[key]?.actual);
     const target = toNumber(campaign.metrics?.[key]?.target);
@@ -364,7 +378,9 @@ function MetricInputs({ metricKey, values, onChange, t }) {
 
 function CampaignForm({ formState, setFormState, onSave, isEditing, onReset }) {
   const { t } = useLocale();
-  const relevantMetrics = getMetricsForType(formState.type);
+  const recommended = getMetricsForType(formState.type);
+  const extra = ALL_METRICS.filter((key) => !recommended.includes(key));
+  const relevantMetrics = [...recommended, ...extra];
 
   const handleField = (field) => (event) => {
     setFormState((current) => ({ ...current, [field]: event.target.value }));
@@ -498,6 +514,7 @@ function CampaignControlCenter() {
   const [selectedId, setSelectedId] = useState(null);
   const [hydrated, setHydrated] = useState(false);
   const [formState, setFormState] = useState(DEFAULT_CAMPAIGN);
+  const [formVisible, setFormVisible] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -536,9 +553,10 @@ function CampaignControlCenter() {
 
   const portfolio = useMemo(() => {
     if (!derivedCampaigns.length) {
-      return { active: 0, risk: 0, avgPacing: 0, status: 'weak' };
+      return { active: 0, risk: 0, monitor: 0, avgPacing: 0, status: 'weak' };
     }
     const risk = derivedCampaigns.filter((item) => item.derived.healthStatus === 'risk').length;
+    const monitor = derivedCampaigns.filter((item) => item.derived.healthStatus === 'monitor').length;
     const avgPacing = Math.round(
       derivedCampaigns.reduce((sum, item) => sum + item.derived.budgetProgress, 0) / derivedCampaigns.length * 100,
     );
@@ -551,6 +569,7 @@ function CampaignControlCenter() {
     return {
       active: derivedCampaigns.length,
       risk,
+      monitor,
       avgPacing,
       status,
     };
@@ -559,6 +578,7 @@ function CampaignControlCenter() {
   const resetForm = () => {
     setFormState(DEFAULT_CAMPAIGN);
     setSelectedId(null);
+    setFormVisible(false);
   };
 
   const saveCampaign = () => {
@@ -575,6 +595,7 @@ function CampaignControlCenter() {
       return [...current, payload];
     });
     setSelectedId(id);
+    setFormVisible(false);
   };
 
   const deleteCampaign = (id) => {
@@ -590,6 +611,7 @@ function CampaignControlCenter() {
   const handleSelect = (item) => {
     setSelectedId(item.campaign.id);
     setFormState(item.campaign);
+    setFormVisible(false);
   };
 
   const handleImport = (event) => {
@@ -644,6 +666,19 @@ function CampaignControlCenter() {
   };
 
   const editing = Boolean(formState.id);
+  const selectedCampaign = derivedCampaigns.find((item) => item.campaign.id === selectedId)?.campaign;
+
+  const openAddForm = () => {
+    setFormState(DEFAULT_CAMPAIGN);
+    setSelectedId(null);
+    setFormVisible(true);
+  };
+
+  const openUpdateForm = () => {
+    if (!selectedCampaign) return;
+    setFormState(selectedCampaign);
+    setFormVisible(true);
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 px-6 py-10 text-slate-900 dark:bg-slate-900 dark:text-slate-100">
@@ -666,14 +701,38 @@ function CampaignControlCenter() {
 
         <div className="grid gap-3 md:grid-cols-4">
           <StatCard label={t('ccc.header.active')} value={portfolio.active} />
-          <StatCard label={t('ccc.header.risk')} value={portfolio.risk} accent="text-amber-600" />
+          <StatCard label={t('ccc.header.monitor')} value={portfolio.monitor} accent="text-amber-600" />
+          <StatCard label={t('ccc.header.attention')} value={portfolio.risk} accent="text-rose-600" />
           <StatCard label={t('ccc.header.pacing')} value={`${portfolio.avgPacing}%`} />
           <StatCard label={t('ccc.header.status')} value={t(`ccc.header.statusValue.${portfolio.status}`)} />
         </div>
 
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="text-sm text-slate-600 dark:text-slate-300">
-            {t('ccc.overviewTitle')}
+          <div className="space-y-2">
+            <div className="text-sm text-slate-600 dark:text-slate-300">
+              {t('ccc.overviewTitle')}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <button
+                type="button"
+                onClick={openAddForm}
+                className="rounded-lg border border-slate-300 px-3 py-2 font-semibold text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                {t('ccc.form.addButton')}
+              </button>
+              <button
+                type="button"
+                onClick={openUpdateForm}
+                disabled={!selectedCampaign}
+                className={`rounded-lg border px-3 py-2 font-semibold transition ${
+                  selectedCampaign
+                    ? 'border-slate-300 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800'
+                    : 'cursor-not-allowed border-slate-200 text-slate-400 dark:border-slate-700 dark:text-slate-500'
+                }`}
+              >
+                {t('ccc.form.updateButton')}
+              </button>
+            </div>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800">
@@ -716,19 +775,21 @@ function CampaignControlCenter() {
           </div>
 
           <div className="space-y-4">
-            <CampaignForm
-              formState={formState}
-              setFormState={setFormState}
-              onSave={saveCampaign}
-              isEditing={editing}
-              onReset={resetForm}
-            />
             <DetailPanel
               campaign={selected?.campaign}
               derived={selected?.derived}
               t={t}
               onDelete={deleteCampaign}
             />
+            {formVisible && (
+              <CampaignForm
+                formState={formState}
+                setFormState={setFormState}
+                onSave={saveCampaign}
+                isEditing={editing}
+                onReset={resetForm}
+              />
+            )}
           </div>
         </div>
       </div>

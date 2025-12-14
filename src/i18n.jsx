@@ -196,7 +196,8 @@ const TRANSLATIONS = {
       subtitle: 'Un tableau de bord actionnable pour savoir quelles campagnes nécessitent ton attention aujourd’hui.',
       header: {
         active: 'Campagnes actives',
-        risk: 'À surveiller',
+        monitor: 'Monitor',
+        attention: 'Attention Risk',
         pacing: 'Pacing moyen',
         status: 'Statut global',
         statusValue: {
@@ -250,6 +251,8 @@ const TRANSLATIONS = {
         addTitle: 'Ajouter une campagne',
         editTitle: 'Modifier la campagne',
         help: 'Renseigne les dates, le budget et les KPIs pour un suivi immédiat.',
+        addButton: 'Ajouter une campagne',
+        updateButton: 'Mettre à jour la campagne',
         reset: 'Réinitialiser',
         save: 'Enregistrer',
         update: 'Mettre à jour',
@@ -626,7 +629,8 @@ const TRANSLATIONS = {
       subtitle: 'Action-oriented dashboard to see which campaigns need your attention today.',
       header: {
         active: 'Active campaigns',
-        risk: 'Need attention',
+        monitor: 'Monitor',
+        attention: 'Attention Risk',
         pacing: 'Avg pacing',
         status: 'Portfolio status',
         statusValue: {
@@ -680,6 +684,8 @@ const TRANSLATIONS = {
         addTitle: 'Add campaign',
         editTitle: 'Edit campaign',
         help: 'Fill dates, budget, and KPIs to track instantly.',
+        addButton: 'Add Campaign',
+        updateButton: 'Update Campaign',
         reset: 'Reset',
         save: 'Save',
         update: 'Update',
